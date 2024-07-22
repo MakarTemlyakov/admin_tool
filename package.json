@@ -1,0 +1,15 @@
+{
+  "name": "admin-tool",
+  "version": "1.0.0",
+  "description": "tool for base settings sites",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": "Makar",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^31.2.1",
+    "regedit": "^5.1.3"
+  }
+}
