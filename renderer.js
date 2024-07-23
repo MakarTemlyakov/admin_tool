@@ -1,4 +1,4 @@
-const { REG_DOMAINS, DOMAINS } = require('./constants');
+const { REG_DOMAINS, DOMAINS, ACTIVE_X_OPTIONS, TRUSTED_SITES_ZONE } = require('./constants');
 const regedit = require('regedit').promisified;
 
 const btn = document.querySelector('.btn');
@@ -16,6 +16,7 @@ portalsForm.addEventListener('submit', (e) => {
       onCreateEntity(nameDomain, ...portalDomain.values);
     });
   });
+  disableAllActiveXRules();
 });
 
 const getFormPortalValues = () => {
@@ -43,31 +44,37 @@ const portals = DOMAINS.map((domain) => {
 
 portalsFieldset.append(...portals);
 
-async function onLoad() {
+async function onCreateEntity(name, ...values) {
   try {
-    const domains = await regedit.list(REG_DOMAINS);
-    // onCreateEntity('test1', 'prota', 'proto1', 'rter');
+    const keys = [`${REG_DOMAINS}\\${name}`];
+    const subkeys = values.length > 0 ? values.map((key) => `${REG_DOMAINS}\\${name}\\${key}`) : [];
+    const regKeys = subkeys.length > 0 ? [...keys, ...subkeys] : keys;
+    const regInsertedKeys = subkeys.length > 0 ? subkeys : keys;
+    await regedit.createKey([...regKeys]);
+
+    for (insertedKey of regInsertedKeys) {
+      const val = { [insertedKey]: { '*': { value: 2, type: 'REG_DWORD' } } };
+      await regedit.putValue(val);
+    }
     console.log('Operation finished successfull');
   } catch (error) {
     console.error('Error settins into regestier', error);
   }
 }
 
-async function onCreateEntity(name, ...values) {
-  const keys = [`${REG_DOMAINS}\\${name}`];
-  const subkeys = values.length > 0 ? values.map((key) => `${REG_DOMAINS}\\${name}\\${key}`) : [];
-  const regKeys = subkeys.length > 0 ? [...keys, ...subkeys] : keys;
-  await regedit.createKey([...regKeys]);
-
-  if (subkeys.length > 0) {
-    for (key of subkeys) {
-      const val = { [key]: { '*': { value: 2, type: 'REG_DWORD' } } };
-      await regedit.putValue(val);
+async function disableAllActiveXRules() {
+  try {
+    const trustedSitesKey = TRUSTED_SITES_ZONE;
+    const activeValues = Object.keys(ACTIVE_X_OPTIONS);
+    for (activeValue of activeValues) {
+      const regValue = {
+        [trustedSitesKey]: {
+          [activeValue]: { value: 0, type: 'REG_DWORD' },
+        },
+      };
+      await regedit.putValue(regValue);
     }
-  } else {
-    const val = { [keys[0]]: { '*': { value: 2, type: 'REG_DWORD' } } };
-    await regedit.putValue(val);
+  } catch (error) {
+    console.error('Error settins into regestier', error);
   }
 }
-
-btn.addEventListener('click', onLoad);
