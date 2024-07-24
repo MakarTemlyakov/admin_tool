@@ -4,10 +4,13 @@ const REG_DOMAINS =
 const TRUSTED_SITES_ZONE =
   'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings\\Zones\\2';
 
+const REG_IE_START_PAGE = 'HKCU\\Software\\Microsoft\\Internet Explorer\\Main';
+
 const DOMAINS = [
   {
     id: 0,
     name: 'Налоговый портал',
+    url: 'https://www.portal.nalog.gov.by/eds1',
     domains: [
       { id: 0, domain: 'gov.by', values: ['*.nalog', '*.nalog'] },
       {
@@ -20,11 +23,13 @@ const DOMAINS = [
   {
     id: 1,
     name: 'Cчета фактуры',
+    url: 'http://vat.gov.by/mainPage/',
     domains: [{ id: 0, domain: 'vat.gov.by', values: [] }],
   },
   {
     id: 2,
     name: 'ФСЗН',
+    url: 'http://portal2.ssf.gov.by/mainPage/',
     domains: [
       { id: 0, domain: 'nces.by', values: ['*.usd'] },
       { id: 1, domain: 'ssf.gov.by', values: ['*.portal2'] },
@@ -46,8 +51,8 @@ const ACTIVE_X_OPTIONS = {
   1201: 'ActiveX controls and plug-ins: Initialize and script ActiveX controls not marked as safe for scripting',
   1208: 'ActiveX controls and plug-ins: Allow previously unused ActiveX controls to run without prompt',
   1209: 'ActiveX controls and plug-ins: Allow Scriptlets',
- '120A': 'ActiveX controls and plug-ins: Override Per-Site (domain-based) ActiveX restrictions',
- '120B': 'ActiveX controls and plug-ins: Override Per-Site (domain-based) ActiveX restrict ions',
+  '120A': 'ActiveX controls and plug-ins: Override Per-Site (domain-based) ActiveX restrictions',
+  '120B': 'ActiveX controls and plug-ins: Override Per-Site (domain-based) ActiveX restrict ions',
   1405: 'ActiveX controls and plug-ins: Script ActiveX controls marked as safe for scripting',
   2000: 'ActiveX controls and plug-ins: Binary and script behaviors',
   2201: 'ActiveX controls and plug-ins: Automatic prompting for ActiveX controls',
@@ -60,4 +65,5 @@ module.exports = {
   DOMAINS,
   ACTIVE_X_OPTIONS,
   TRUSTED_SITES_ZONE,
+  REG_IE_START_PAGE,
 };

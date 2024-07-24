@@ -1,5 +1,14 @@
-const { REG_DOMAINS, DOMAINS, ACTIVE_X_OPTIONS, TRUSTED_SITES_ZONE } = require('./constants');
+const {
+  REG_DOMAINS,
+  DOMAINS,
+  ACTIVE_X_OPTIONS,
+  TRUSTED_SITES_ZONE,
+  REG_IE_START_PAGE,
+} = require('./constants');
 const regedit = require('regedit').promisified;
+const path = require('path');
+const os = require('os');
+const fs = require('fs');
 
 const btn = document.querySelector('.btn');
 const portalsForm = document.querySelector('#portals');
@@ -14,6 +23,7 @@ portalsForm.addEventListener('submit', (e) => {
     checkedPortal.domains.forEach((portalDomain) => {
       const nameDomain = portalDomain.domain;
       onCreateEntity(nameDomain, ...portalDomain.values);
+      addToFavorites(checkedPortal.name, checkedPortal.url);
     });
   });
   disableAllActiveXRules();
@@ -77,5 +87,24 @@ async function disableAllActiveXRules() {
     }
   } catch (error) {
     console.error('Error settins into regestier', error);
+  }
+}
+
+async function addSiteToStartPage(nameSite, siteUrl) {
+  const ieMainKey = await regedit.list(REG_IE_START_PAGE);
+  const sites1 = ieMainKey[REG_IE_START_PAGE].values['Start Page'];
+  const ieStartPageKey = REG_IE_START_PAGE;
+}
+
+async function addToFavorites(nameSite, siteUrl) {
+  const favoritesPath = path.join(os.homedir(), 'Favorites', `${nameSite}.url`);
+  const favoritesBarPath = path.join(os.homedir(), 'Favorites', 'Links', `${nameSite}.url`);
+  try {
+    const urlFileContent = `[InternetShortcut]\r\nURL=${siteUrl}\r\nIconFile=https://www.google.com/favicon.ico\r\nIconIndex=0\r\n`;
+    fs.writeFileSync(favoritesPath, urlFileContent);
+    fs.writeFileSync(favoritesBarPath, urlFileContent);
+    console.log('site success addedd');
+  } catch (err) {
+    console.error('err', err);
   }
 }
