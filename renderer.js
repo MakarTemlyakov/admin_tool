@@ -67,9 +67,10 @@ async function disableAllActiveXRules() {
     const trustedSitesKey = TRUSTED_SITES_ZONE;
     const activeValues = Object.keys(ACTIVE_X_OPTIONS);
     for (activeValue of activeValues) {
+      let value = activeValue === '2702' || activeValue === '120B' ? 3 : 0;
       const regValue = {
         [trustedSitesKey]: {
-          [activeValue]: { value: 0, type: 'REG_DWORD' },
+          [activeValue]: { value: value, type: 'REG_DWORD' },
         },
       };
       await regedit.putValue(regValue);
