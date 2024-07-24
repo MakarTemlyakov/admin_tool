@@ -32,6 +32,13 @@ const DOMAINS = [
   },
 ];
 
+/* 
+----Regedit params -----
+0 - Enable
+1 - Suggest
+3-  Disable
+*/
+
 const ACTIVE_X_OPTIONS = {
   1001: 'ActiveX controls and plug-ins: Download signed ActiveX controls',
   1004: 'ActiveX controls and plug-ins: Download unsigned ActiveX controls',
@@ -39,9 +46,8 @@ const ACTIVE_X_OPTIONS = {
   1201: 'ActiveX controls and plug-ins: Initialize and script ActiveX controls not marked as safe for scripting',
   1208: 'ActiveX controls and plug-ins: Allow previously unused ActiveX controls to run without prompt',
   1209: 'ActiveX controls and plug-ins: Allow Scriptlets',
-  '120A':
-    'ActiveX controls and plug-ins: ActiveX controls and plug-ins: Override Per-Site (domain-based) ActiveX restrictions',
-  '120B': 'ActiveX controls and plug-ins: Override Per-Site (domain-based) ActiveX restrict ions',
+ '120A': 'ActiveX controls and plug-ins: Override Per-Site (domain-based) ActiveX restrictions',
+ '120B': 'ActiveX controls and plug-ins: Override Per-Site (domain-based) ActiveX restrict ions',
   1405: 'ActiveX controls and plug-ins: Script ActiveX controls marked as safe for scripting',
   2000: 'ActiveX controls and plug-ins: Binary and script behaviors',
   2201: 'ActiveX controls and plug-ins: Automatic prompting for ActiveX controls',
