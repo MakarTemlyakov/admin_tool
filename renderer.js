@@ -4,15 +4,20 @@ const {
   ACTIVE_X_OPTIONS,
   TRUSTED_SITES_ZONE,
   REG_IE_START_PAGE,
+  REG_IE_POPUP_BLOCKER,
+  REG_IE_INTRANET_COMPATIBILITY,
+  REG_MSCOMPATIBILITY,
 } = require('./constants');
 const regedit = require('regedit').promisified;
 const path = require('path');
 const os = require('os');
 const fs = require('fs');
+const { electron, BrowserWindow, ipcRenderer } = require('electron');
 
 const btn = document.querySelector('.btn');
 const portalsForm = document.querySelector('#portals');
 const portalsFieldset = portalsForm.querySelector('.portal-list');
+const doawnloadBtn = document.querySelector('.doawnload-btn');
 
 portalsForm.addEventListener('submit', (e) => {
   e.preventDefault();
@@ -26,7 +31,14 @@ portalsForm.addEventListener('submit', (e) => {
       addToFavorites(checkedPortal.name, checkedPortal.url);
     });
   });
+  allowPopupWindows();
   disableAllActiveXRules();
+  disableIntranetCompatibilityMode();
+  disableIntranetMSCompatibilityMode();
+});
+
+doawnloadBtn.addEventListener('click', (e) => {
+  ipcRenderer.send('open-new-window');
 });
 
 const getFormPortalValues = () => {
@@ -107,4 +119,36 @@ async function addToFavorites(nameSite, siteUrl) {
   } catch (err) {
     console.error('err', err);
   }
+}
+
+async function allowPopupWindows() {
+  const popBlockerValue = 'PopupMgr';
+  const value = {
+    [REG_IE_POPUP_BLOCKER]: {
+      [popBlockerValue]: { value: 0, type: 'REG_DWORD' },
+    },
+  };
+  await regedit.putValue(value);
+}
+
+async function disableIntranetCompatibilityMode() {
+  const compatibilityModeValue = 'IntranetCompatibilityMode';
+  const value = {
+    [REG_IE_INTRANET_COMPATIBILITY]: {
+      [compatibilityModeValue]: { value: 0, type: 'REG_DWORD' },
+    },
+  };
+
+  await regedit.putValue(value);
+}
+
+async function disableIntranetMSCompatibilityMode() {
+  const msCompatibilityModeValue = 'MSCompatibilityMode';
+  const value = {
+    [REG_IE_INTRANET_COMPATIBILITY]: {
+      [msCompatibilityModeValue]: { value: 0, type: 'REG_DWORD' },
+    },
+  };
+
+  await regedit.putValue(value);
 }

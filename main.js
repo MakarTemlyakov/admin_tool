@@ -1,4 +1,4 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -16,5 +16,22 @@ function createWindow() {
 
 app.whenReady().then(() => {
   const win = createWindow();
+
   win.webContents.openDevTools();
+});
+
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') {
+    app.quit();
+  }
+});
+
+app.on('activate', () => {
+  if (BrowserWindow.getAllWindows().length === 0) {
+    createWindow();
+  }
+});
+
+ipcMain.on('open-new-window', () => {
+  console.log('click');
 });
