@@ -14,18 +14,20 @@ const btn = document.querySelector('.btn');
 const portalsForm = document.querySelector('#portals');
 const portalsFieldset = portalsForm.querySelector('.portal-list');
 
-portalsForm.addEventListener('submit', (e) => {
+portalsForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const formValues = getFormPortalValues();
+ 
   const checkedDomains = DOMAINS.filter((domaind) => formValues.includes(domaind.id));
-
-  checkedDomains.forEach((checkedPortal) => {
-    checkedPortal.domains.forEach((portalDomain) => {
+  for(checkedPortal of checkedDomains) {
+      await addSiteToStartPage(checkedPortal.url);
+    for(portalDomain of checkedPortal.domains) {
       const nameDomain = portalDomain.domain;
-      onCreateEntity(nameDomain, ...portalDomain.values);
-      addToFavorites(checkedPortal.name, checkedPortal.url);
-    });
-  });
+      await onCreateEntity(nameDomain, ...portalDomain.values);
+      await addToFavorites(checkedPortal.name, checkedPortal.url);
+    }
+  };
+ 
   disableAllActiveXRules();
 });
 
@@ -90,10 +92,23 @@ async function disableAllActiveXRules() {
   }
 }
 
-async function addSiteToStartPage(nameSite, siteUrl) {
+async function addSiteToStartPage(siteUrl) {
+  try {
   const ieMainKey = await regedit.list(REG_IE_START_PAGE);
-  const sites1 = ieMainKey[REG_IE_START_PAGE].values['Start Page'];
-  const ieStartPageKey = REG_IE_START_PAGE;
+  const keyValue = `Secondary Start Pages`;
+  const sites1 = ieMainKey[REG_IE_START_PAGE].values['Secondary Start Pages'];
+  const value = {
+    [REG_IE_START_PAGE]: {
+      [keyValue]:{ value: [...sites1.value, siteUrl], type: 'REG_MULTI_SZ'},
+    },
+  };
+
+  await regedit.putValue(value);
+
+  }catch(err) {
+    console.log('error', err);
+  }
+  console.log('sited add to start page succsessfull');
 }
 
 async function addToFavorites(nameSite, siteUrl) {
