@@ -6,13 +6,13 @@ const {
   REG_IE_START_PAGE,
   REG_IE_POPUP_BLOCKER,
   REG_IE_INTRANET_COMPATIBILITY,
-  REG_MSCOMPATIBILITY,
+  REG_IE_MSCOMPATIBILITY,
 } = require('./constants');
+const {ipcRenderer} = require('electron');
 const regedit = require('regedit').promisified;
 const path = require('path');
 const os = require('os');
 const fs = require('fs');
-const { electron, BrowserWindow, ipcRenderer } = require('electron');
 
 const btn = document.querySelector('.btn');
 const portalsForm = document.querySelector('#portals');
@@ -33,12 +33,15 @@ portalsForm.addEventListener('submit', async (e) => {
     }
   };
  
-  disableAllActiveXRules();
-  disableIntranetCompatibilityMode();
-  disableIntranetMSCompatibilityMode();
+  await disableAllActiveXRules();
+  await disableIntranetCompatibilityMode();
+  await disableIntranetMSCompatibilityMode();
+  await allowPopupWindows();
+  await disableCheckServerHttp();
 });
 
 doawnloadBtn.addEventListener('click', (e) => {
+  ipcRenderer.postMessage('open-new-window', 'sds');
   ipcRenderer.send('open-new-window');
 });
 
@@ -159,10 +162,27 @@ async function disableIntranetCompatibilityMode() {
 async function disableIntranetMSCompatibilityMode() {
   const msCompatibilityModeValue = 'MSCompatibilityMode';
   const value = {
-    [REG_IE_INTRANET_COMPATIBILITY]: {
+    [REG_IE_MSCOMPATIBILITY]: {
       [msCompatibilityModeValue]: { value: 0, type: 'REG_DWORD' },
     },
   };
 
   await regedit.putValue(value);
+}
+
+async function disableCheckServerHttp() {
+  try{
+    const REG_VALUE_FLAGS = 'Flags';
+    const value = {
+      [TRUSTED_SITES_ZONE]: {
+        [REG_VALUE_FLAGS]: {
+          value: 67, type: 'REG_DWORD',
+        },
+      },
+    };
+    await regedit.putValue(value);
+    console.log('disabled https check success');
+  } catch(error) {
+    console.log('http flags doesnt disable', error)
+  }
 }
