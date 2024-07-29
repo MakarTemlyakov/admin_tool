@@ -1,0 +1,10 @@
+.programs-item {
+  display: flex;
+  gap: 10px;
+}
+
+ul {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}

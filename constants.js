@@ -1,6 +1,9 @@
 const REG_DOMAINS =
   'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings\\ZoneMap\\Domains';
 
+const REG_SECURE_PROTOCOLS =
+  'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings';
+
 const TRUSTED_SITES_ZONE =
   'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings\\Zones\\2';
 
@@ -100,4 +103,5 @@ module.exports = {
   REG_IE_POPUP_BLOCKER,
   REG_IE_INTRANET_COMPATIBILITY,
   REG_IE_MSCOMPATIBILITY,
+  REG_SECURE_PROTOCOLS,
 };

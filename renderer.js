@@ -7,8 +7,9 @@ const {
   REG_IE_POPUP_BLOCKER,
   REG_IE_INTRANET_COMPATIBILITY,
   REG_IE_MSCOMPATIBILITY,
+  REG_SECURE_PROTOCOLS,
 } = require('./constants');
-const {ipcRenderer} = require('electron');
+const { ipcRenderer } = require('electron');
 const regedit = require('regedit').promisified;
 const path = require('path');
 const os = require('os');
@@ -22,27 +23,44 @@ const doawnloadBtn = document.querySelector('.doawnload-btn');
 portalsForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const formValues = getFormPortalValues();
- 
+
   const checkedDomains = DOMAINS.filter((domaind) => formValues.includes(domaind.id));
-  for(checkedPortal of checkedDomains) {
-      await addSiteToStartPage(checkedPortal.url);
-    for(portalDomain of checkedPortal.domains) {
+  for (checkedPortal of checkedDomains) {
+    await addSiteToStartPage(checkedPortal.url);
+    for (portalDomain of checkedPortal.domains) {
       const nameDomain = portalDomain.domain;
       await onCreateEntity(nameDomain, ...portalDomain.values);
       await addToFavorites(checkedPortal.name, checkedPortal.url);
     }
-  };
- 
+  }
+
   await disableAllActiveXRules();
   await disableIntranetCompatibilityMode();
   await disableIntranetMSCompatibilityMode();
   await allowPopupWindows();
   await disableCheckServerHttp();
+  await setupSecurityProtocols();
 });
 
-doawnloadBtn.addEventListener('click', (e) => {
-  ipcRenderer.postMessage('open-new-window', 'sds');
-  ipcRenderer.send('open-new-window');
+document.addEventListener('DOMContentLoaded', () => {
+  const progressBox = document.querySelector('.progress');
+  const progressStatus = progressBox.querySelector('.progress__status');
+  const progressBar = progressBox.querySelector('.progress-bar');
+  doawnloadBtn.addEventListener('click', (e) => {
+    ipcRenderer.send('open-new-window');
+  });
+  progressBox.style.display = 'none';
+  ipcRenderer.on('progress', (event, progress, message) => {
+    progressBox.style.display = 'flex';
+    doawnloadBtn.setAttribute('disabled', true);
+    if (message) {
+      doawnloadBtn.removeAttribute('disabled');
+      progressStatus.innerHTML = message;
+    } else {
+      progressStatus.innerHTML = `Loading: ${progress}%`;
+    }
+    progressBar.value = progress;
+  });
 });
 
 const getFormPortalValues = () => {
@@ -108,18 +126,17 @@ async function disableAllActiveXRules() {
 
 async function addSiteToStartPage(siteUrl) {
   try {
-  const ieMainKey = await regedit.list(REG_IE_START_PAGE);
-  const keyValue = `Secondary Start Pages`;
-  const sites1 = ieMainKey[REG_IE_START_PAGE].values['Secondary Start Pages'];
-  const value = {
-    [REG_IE_START_PAGE]: {
-      [keyValue]:{ value: [...sites1.value, siteUrl], type: 'REG_MULTI_SZ'},
-    },
-  };
+    const ieMainKey = await regedit.list(REG_IE_START_PAGE);
+    const keyValue = `Secondary Start Pages`;
+    const sites1 = ieMainKey[REG_IE_START_PAGE].values['Secondary Start Pages'];
+    const value = {
+      [REG_IE_START_PAGE]: {
+        [keyValue]: { value: [...sites1.value, siteUrl], type: 'REG_MULTI_SZ' },
+      },
+    };
 
-  await regedit.putValue(value);
-
-  }catch(err) {
+    await regedit.putValue(value);
+  } catch (err) {
     console.log('error', err);
   }
   console.log('sited add to start page succsessfull');
@@ -171,18 +188,37 @@ async function disableIntranetMSCompatibilityMode() {
 }
 
 async function disableCheckServerHttp() {
-  try{
+  try {
     const REG_VALUE_FLAGS = 'Flags';
     const value = {
       [TRUSTED_SITES_ZONE]: {
         [REG_VALUE_FLAGS]: {
-          value: 67, type: 'REG_DWORD',
+          value: 67,
+          type: 'REG_DWORD',
         },
       },
     };
     await regedit.putValue(value);
     console.log('disabled https check success');
-  } catch(error) {
-    console.log('http flags doesnt disable', error)
+  } catch (error) {
+    console.log('http flags doesnt disable', error);
+  }
+}
+
+async function setupSecurityProtocols() {
+  try {
+    const SECURE_PROTOCOLS_VALUE = 'SecureProtocols';
+    const value = {
+      [REG_SECURE_PROTOCOLS]: {
+        [SECURE_PROTOCOLS_VALUE]: {
+          value: 9864,
+          type: 'REG_DWORD',
+        },
+      },
+    };
+    await regedit.putValue(value);
+    console.log('security protocols setup successfull');
+  } catch (err) {
+    console.error('securyity protocols isnt setup');
   }
 }

@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+    <link rel="stylesheet" href="./style.css">
     <title>Hello World!</title>
 </head>
 
@@ -18,11 +19,16 @@
     </form>
     <div>
         <h3>Проаграммы:</h3>
-        <ul>
-            <li><button class="doawnload-btn">Скачать авест</button></li>
+        <ul class="programs">
+            <li class="programs-item">
+                <button class="doawnload-btn">Скачать авест</button>
+                <div class="progress">
+                    <span class="progress__status">Loading:</span>
+                    <progress class="progress-bar" value="0" max="100"></progress>
+                </div>
+            </li>
         </ul>
     </div>
-
     <script src="./renderer.js"></script>
 </body>
 
