@@ -15,7 +15,8 @@ const REG_IE_INTRANET_COMPATIBILITY =
   'HKCU\\Software\\Microsoft\\Internet Explorer\\BrowserEmulation';
 
 const REG_IE_MSCOMPATIBILITY = 'HKCU\\Software\\Microsoft\\Internet Explorer\\BrowserEmulation';
-
+const TORRENT_URL_OFFICE =
+  'magnet:?xt=urn:btih:2678550B722624B4D0F614197758525936507C2A&tr=http%3A%2F%2Fbt2.t-ru.org%2Fann%3Fmagnet&dn=Microsoft%20Office%202016-2019%20Professional%20Plus%20%2F%20Standard%20%2B%20Visio%20%2B%20Project%2016.0.12527.22105%20(2022.03)%20(W%207-W%2011)%20RePack%20by%20KpoJIuK%20%5BMulti%2FRu%5D';
 const DOMAINS = [
   {
     id: 0,
@@ -104,4 +105,5 @@ module.exports = {
   REG_IE_INTRANET_COMPATIBILITY,
   REG_IE_MSCOMPATIBILITY,
   REG_SECURE_PROTOCOLS,
+  TORRENT_URL_OFFICE,
 };

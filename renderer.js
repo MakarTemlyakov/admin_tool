@@ -8,17 +8,23 @@ const {
   REG_IE_INTRANET_COMPATIBILITY,
   REG_IE_MSCOMPATIBILITY,
   REG_SECURE_PROTOCOLS,
+  TORRENT_URL_OFFICE,
 } = require('./constants');
 const { ipcRenderer } = require('electron');
 const regedit = require('regedit').promisified;
 const path = require('path');
 const os = require('os');
 const fs = require('fs');
+const WebTorrent = require('webtorrent');
 
 const btn = document.querySelector('.btn');
 const portalsForm = document.querySelector('#portals');
 const portalsFieldset = portalsForm.querySelector('.portal-list');
 const doawnloadBtn = document.querySelector('.doawnload-btn');
+const doawnloadOffice = document.querySelector('.doawnload-office');
+const progressBox = document.querySelector('.progress');
+const progressStatus = progressBox.querySelector('.progress__status');
+const progressBar = progressBox.querySelector('.progress-bar');
 
 portalsForm.addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -43,24 +49,14 @@ portalsForm.addEventListener('submit', async (e) => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-  const progressBox = document.querySelector('.progress');
-  const progressStatus = progressBox.querySelector('.progress__status');
-  const progressBar = progressBox.querySelector('.progress-bar');
+  progressBox.style.display = 'none';
   doawnloadBtn.addEventListener('click', (e) => {
     ipcRenderer.send('open-new-window');
   });
-  progressBox.style.display = 'none';
-  ipcRenderer.on('progress', (event, progress, message) => {
-    progressBox.style.display = 'flex';
-    doawnloadBtn.setAttribute('disabled', true);
-    if (message) {
-      doawnloadBtn.removeAttribute('disabled');
-      progressStatus.innerHTML = message;
-    } else {
-      progressStatus.innerHTML = `Loading: ${progress}%`;
-    }
-    progressBar.value = progress;
+  doawnloadOffice.addEventListener('click', (e) => {
+    ipcRenderer.send('load-office');
   });
+  ipcRenderer.on('progress', (event, progress, message) => getProgressDownlaod(progress, message));
 });
 
 const getFormPortalValues = () => {
@@ -221,4 +217,25 @@ async function setupSecurityProtocols() {
   } catch (err) {
     console.error('securyity protocols isnt setup');
   }
+}
+
+function getProgressDownlaod(progress, message) {
+  progressBox.style.display = 'flex';
+  doawnloadBtn.setAttribute('disabled', true);
+  if (message) {
+    doawnloadBtn.removeAttribute('disabled');
+    progressStatus.innerHTML = message;
+  } else {
+    progressStatus.innerHTML = `Loading: ${progress}%`;
+  }
+  progressBar.value = progress;
+}
+
+function downloadTorrent() {
+  const magnetUrl = TORRENT_URL_OFFICE;
+  const client = new WebTorrent();
+  client.add(magnetUrl, { path: 'G:\\ESD\\' }, (torrent) => {
+    console.log('Clent is dodownloading:', torrent.progress);
+  });
+  console.log({ WebTorrent });
 }

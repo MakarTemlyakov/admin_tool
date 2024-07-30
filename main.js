@@ -1,6 +1,7 @@
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, getCurrentWindow } = require('electron');
 const fs = require('fs');
 const axios = require('axios');
+
 let mainWindow;
 
 function createWindow() {
@@ -10,7 +11,6 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
-      preload: 'preload.js',
     },
   });
 
@@ -74,4 +74,25 @@ ipcMain.on('open-new-window', async () => {
     .catch((error) => {
       console.error('Error occurred:', error);
     });
+});
+
+ipcMain.on('load-office', async () => {
+  try {
+    console.log({ remote });
+    const data = await dialog.showOpenDialog({
+      properties: ['openDirectory', 'openFile', 'multiSelections', 'showHiddenFiles'],
+      filters: [
+        { name: 'All Files', extensions: ['*'] }, // Фильтр для всех файлов
+      ],
+    });
+
+    if (data.canceled) {
+      console.log('Dialog was canceled');
+      return;
+    }
+
+    console.log('Selected file paths:', data.filePaths);
+  } catch (error) {
+    console.error('Error opening dialog:', error);
+  }
 });
