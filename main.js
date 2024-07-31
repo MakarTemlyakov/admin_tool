@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain, dialog, getCurrentWindow } = require('electron');
 const fs = require('fs');
 const axios = require('axios');
+const { PROGRAMM } = require('./constants');
 
 let mainWindow;
 
@@ -76,14 +77,27 @@ ipcMain.on('open-new-window', async () => {
     });
 });
 
-ipcMain.on('load-office', () => {
+ipcMain.on('load-office', (e, id) => {
+  console.log({ id });
+  const programm = getProgrammById(id);
   const pathFiles = dialog.showOpenDialogSync({
     properties: ['createDirectory', 'openDirectory'],
     buttonLabel: 'Save Files',
   });
   if (pathFiles && pathFiles.length > 0) {
-    mainWindow.webContents.send('load-office', pathFiles[0]);
+    mainWindow.webContents.send('load-office', pathFiles[0], programm);
   } else {
     return;
   }
 });
+
+function getProgrammById(id) {
+  switch (id) {
+    case 0:
+      return PROGRAMM.office;
+    case 1:
+      return PROGRAMM.acrobat;
+    default:
+      return null;
+  }
+}

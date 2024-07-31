@@ -24,11 +24,11 @@ const btn = document.querySelector('.btn');
 const portalsForm = document.querySelector('#portals');
 const portalsFieldset = portalsForm.querySelector('.portal-list');
 const doawnloadBtn = document.querySelector('.doawnload-btn');
-const doawnloadOffice = document.querySelector('.doawnload-office');
+const doawnloadsButtons = document.querySelectorAll('.doawnload-office');
 const progressBox = document.querySelector('.progress');
 const progressStatus = progressBox.querySelector('.progress__status');
 const progressBar = progressBox.querySelector('.progress-bar');
-
+const programList = document.querySelectorAll('.programs > li');
 portalsForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const formValues = getFormPortalValues();
@@ -52,14 +52,16 @@ portalsForm.addEventListener('submit', async (e) => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
+  doawnloadsButtons.forEach((downloadBtn, key) => {
+    downloadBtn.addEventListener('click', (e) => {
+      ipcRenderer.send('load-office', key);
+    });
+  });
   doawnloadBtn.addEventListener('click', (e) => {
     ipcRenderer.send('open-new-window');
   });
-  doawnloadOffice.addEventListener('click', (e) => {
-    ipcRenderer.send('load-office');
-  });
   ipcRenderer.on('progress', (event, progress, message) => getProgressDownlaod(progress, message));
-  ipcRenderer.on('load-office', (event, savePath) => downloadTorrent(savePath, PROGRAMM.office));
+  ipcRenderer.on('load-office', (event, savePath, programm) => downloadTorrent(savePath, programm));
 });
 
 const getFormPortalValues = () => {
@@ -234,6 +236,7 @@ function getProgressDownlaod(progress, message) {
 }
 
 function downloadTorrent(savePath, program) {
+  console.log({ program });
   const programmNode = programList[program.id];
   const progressBar = programmNode.querySelector('.progress-bar');
   const progressStatus = programmNode.querySelector('.progress__status');
@@ -244,12 +247,11 @@ function downloadTorrent(savePath, program) {
     const totalBytes = parseInt(torrent.length, 10);
     torrent.on('download', (bytes) => {
       const progress = (torrent.downloaded / totalBytes) * 100;
-      officeProgressBar.value = Math.round(progress);
-      officeProgressStatus.textContent = `${Math.round(progress)}%`;
+      progressBar.value = Math.round(progress);
+      progressStatus.textContent = `${Math.round(progress)}%`;
     });
     torrent.on('done', () => {
-      officeProgressStatus.textContent = `Download completed!`;
+      progressStatus.textContent = `Download completed!`;
     });
   });
-  client.console.log({ WebTorrent: savePath });
 }

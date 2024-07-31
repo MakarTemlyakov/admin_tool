@@ -12,6 +12,8 @@ const REG_IE_MSCOMPATIBILITY = 'HKCU\\Software\\Microsoft\\Internet Explorer\\Br
 const AVEST_URL = 'https://nces.by/wp-content/uploads/gossuok/AvPKISetup(bel).zip';
 const TORRENT_URL_OFFICE =
   'magnet:?xt=urn:btih:2678550B722624B4D0F614197758525936507C2A&tr=http%3A%2F%2Fbt2.t-ru.org%2Fann%3Fmagnet&dn=Microsoft%20Office%202016-2019%20Professional%20Plus%20%2F%20Standard%20%2B%20Visio%20%2B%20Project%2016.0.12527.22105%20(2022.03)%20(W%207-W%2011)%20RePack%20by%20KpoJIuK%20%5BMulti%2FRu%5D';
+const TORRENT_URL_ACROBAT =
+  'magnet:?xt=urn:btih:50FD84BC108C0F82265B13F7C95C303C8F4D70B6&tr=http%3A%2F%2Fbt3.t-ru.org%2Fann%3Fmagnet&dn=Adobe%20Acrobat%20Pro%20DC%202021.001.20149%20RePack%20by%20KpoJIuK%20%5B2021%2CMulti%2FRu%5D';
 const DOMAINS = [
   {
     id: 0,
@@ -93,6 +95,7 @@ const ACTIVE_X_OPTIONS = {
 const PROGRAMM = {
   avest: { id: 0, name: 'Скачать Авест', url: AVEST_URL },
   office: { id: 1, name: 'Скачать Офис(2016-2019)', url: TORRENT_URL_OFFICE },
+  acrobat: { id: 2, name: 'Скачать Acrobat Reader (2021)', url: TORRENT_URL_ACROBAT },
 };
 
 module.exports = {
