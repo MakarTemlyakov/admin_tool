@@ -9,12 +9,15 @@ const {
   REG_IE_MSCOMPATIBILITY,
   REG_SECURE_PROTOCOLS,
   TORRENT_URL_OFFICE,
+  PROGRAMM,
+  AVEST_URL,
 } = require('./constants');
 const { ipcRenderer } = require('electron');
 const regedit = require('regedit').promisified;
 const path = require('path');
 const os = require('os');
 const fs = require('fs');
+
 const WebTorrent = require('webtorrent');
 
 const btn = document.querySelector('.btn');
@@ -49,7 +52,6 @@ portalsForm.addEventListener('submit', async (e) => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-  progressBox.style.display = 'none';
   doawnloadBtn.addEventListener('click', (e) => {
     ipcRenderer.send('open-new-window');
   });
@@ -57,6 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ipcRenderer.send('load-office');
   });
   ipcRenderer.on('progress', (event, progress, message) => getProgressDownlaod(progress, message));
+  ipcRenderer.on('load-office', (event, savePath) => downloadTorrent(savePath, PROGRAMM.office));
 });
 
 const getFormPortalValues = () => {
@@ -220,7 +223,6 @@ async function setupSecurityProtocols() {
 }
 
 function getProgressDownlaod(progress, message) {
-  progressBox.style.display = 'flex';
   doawnloadBtn.setAttribute('disabled', true);
   if (message) {
     doawnloadBtn.removeAttribute('disabled');
@@ -231,11 +233,23 @@ function getProgressDownlaod(progress, message) {
   progressBar.value = progress;
 }
 
-function downloadTorrent() {
-  const magnetUrl = TORRENT_URL_OFFICE;
+function downloadTorrent(savePath, program) {
+  const programmNode = programList[program.id];
+  const progressBar = programmNode.querySelector('.progress-bar');
+  const progressStatus = programmNode.querySelector('.progress__status');
+  const magnetUrl = program.url;
+
   const client = new WebTorrent();
-  client.add(magnetUrl, { path: 'G:\\ESD\\' }, (torrent) => {
-    console.log('Clent is dodownloading:', torrent.progress);
+  client.add(magnetUrl, { path: savePath }, (torrent) => {
+    const totalBytes = parseInt(torrent.length, 10);
+    torrent.on('download', (bytes) => {
+      const progress = (torrent.downloaded / totalBytes) * 100;
+      officeProgressBar.value = Math.round(progress);
+      officeProgressStatus.textContent = `${Math.round(progress)}%`;
+    });
+    torrent.on('done', () => {
+      officeProgressStatus.textContent = `Download completed!`;
+    });
   });
-  console.log({ WebTorrent });
+  client.console.log({ WebTorrent: savePath });
 }

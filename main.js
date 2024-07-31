@@ -58,7 +58,7 @@ ipcMain.on('open-new-window', async () => {
       response.data.on('data', (chunk) => {
         receivedBytes += chunk.length;
         const progress = (receivedBytes / totalBytes) * 100;
-        mainWindow.webContents.send('progress', progress.toFixed(2));
+        mainWindow.webContents.send('progress', Math.round(progress));
       });
 
       response.data.pipe(writer);
@@ -76,23 +76,14 @@ ipcMain.on('open-new-window', async () => {
     });
 });
 
-ipcMain.on('load-office', async () => {
-  try {
-    console.log({ remote });
-    const data = await dialog.showOpenDialog({
-      properties: ['openDirectory', 'openFile', 'multiSelections', 'showHiddenFiles'],
-      filters: [
-        { name: 'All Files', extensions: ['*'] }, // Фильтр для всех файлов
-      ],
-    });
-
-    if (data.canceled) {
-      console.log('Dialog was canceled');
-      return;
-    }
-
-    console.log('Selected file paths:', data.filePaths);
-  } catch (error) {
-    console.error('Error opening dialog:', error);
+ipcMain.on('load-office', () => {
+  const pathFiles = dialog.showOpenDialogSync({
+    properties: ['createDirectory', 'openDirectory'],
+    buttonLabel: 'Save Files',
+  });
+  if (pathFiles && pathFiles.length > 0) {
+    mainWindow.webContents.send('load-office', pathFiles[0]);
+  } else {
+    return;
   }
 });
