@@ -4,44 +4,27 @@
 <head>
     <meta charset="UTF-8">
     <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self';">
     <link rel="stylesheet" href="./style.css">
     <title>Hello World!</title>
 </head>
 
 <body>
-    <h1>Панель администрирования:</h1>
-    <form id="portals">
-        <fieldset class="portal-list">
-            <legend class="portals__title">Порталы:</legend>
-        </fieldset>
-        <button class="btn" type="submit">Настроить</button>
-    </form>
-    <div>
-        <h3>Проаграммы:</h3>
-        <ul class="programs">
-            <li class="programs-item">
-                <button class="doawnload-btn">Скачать авест</button>
-                <div class="progress">
-                    <span class="progress__status">Loading:</span>
-                    <progress class="progress-bar" value="0" max="100"></progress>
-                </div>
-            </li>
-            <li class="programs-item">
-                <button class="doawnload-office">Скачать office</button>
-                <div class="progress">
-                    <span class="progress__status">Loading:</span>
-                    <progress class="progress-bar" value="0" max="100"></progress>
-                </div>
-            </li>
-            <li class="programs-item">
-                <button class="doawnload-office">Скачать Acrobat Reader</button>
-                <div class="progress">
-                    <span class="progress__status">Loading:</span>
-                    <progress class="progress-bar" value="0" max="100"></progress>
-                </div>
-            </li>
-        </ul>
+    <div id="app">
+        <nav class="navigation">
+            <ul class="nav-menu">
+                <li class="menu-item">
+                    <input class="menu-item__radio" type="radio" id="portals" name="drone" value="portals" checked />
+                    <label for="portals">Порталы</label>
+                </li>
+                <li class="menu-item">
+                    <input class="menu-item__radio" type="radio" id="programms" name="drone" value="programms" />
+                    <label for="programms">Программаы</label>
+                </li>
+            </ul>
+        </nav>
+        <main class="main">
+        </main>
     </div>
     <script src="./renderer.js"></script>
 </body>

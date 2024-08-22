@@ -1,3 +1,14 @@
+* {
+  padding: 0;
+  margin: 0;
+}
+html {
+  height: 100%;
+  min-height: 100%;
+}
+body {
+  height: 100%;
+}
 .programs-item {
   display: flex;
   gap: 10px;
@@ -7,4 +18,106 @@ ul {
   padding: 0;
   margin: 0;
   list-style: none;
+}
+
+#app {
+  display: flex;
+  justify-content: space-between;
+  height: 100%;
+}
+
+.navigation {
+  background: #ffffff;
+  min-width: 30%;
+  font-size: 18px;
+  font-weight: 500;
+  gap: 2px;
+  border-right: 1px solid gray;
+}
+
+.nav-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  height: 100vh;
+}
+
+.main {
+  padding: 10px;
+  width: 100%;
+  background: #f5f5f5;
+}
+
+.menu-item__radio {
+  display: none;
+}
+
+.menu-item {
+  display: flex;
+  flex-direction: column;
+}
+.menu-item__radio:checked + label {
+  background: #4574fff5;
+  color: #ffffff;
+}
+.menu-item__radio + label {
+  padding: 10px;
+}
+
+.portals__title {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.portal-list {
+  font-size: 18px;
+  padding: 10px;
+  border-width: 1px;
+  border-color: #63585845;
+}
+
+.group-portal {
+  display: flex;
+  gap: 5px;
+}
+
+.btn {
+  cursor: pointer;
+  margin-top: 5px;
+  min-width: 30%;
+  padding: 10px 5px;
+  font-size: 16px;
+  font-weight: 600;
+  border:none;
+  color: #ffffff;
+  border-radius: 5px;
+  background:#0d6efd;
+}
+
+.programms-title {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.programs {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.programs-item {
+  display: flex;
+  align-items: center;
+  width: 40%;
+}
+
+.doawnload-torrent, .doawnload-btn  {
+  min-width: 100%;
+  border:none;
+  border-radius: 5px;
+  padding: 10px 5px;
+  font-size: 16px;
+  background: #4574fff5;
+  color: #ffffff;
 }

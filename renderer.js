@@ -17,49 +17,105 @@ const regedit = require('regedit').promisified;
 const path = require('path');
 const os = require('os');
 const fs = require('fs');
-
-const WebTorrent = require('webtorrent');
+const WebTorrent = require('webtorrent-hybrid');
 
 const btn = document.querySelector('.btn');
-const portalsForm = document.querySelector('#portals');
-const portalsFieldset = portalsForm.querySelector('.portal-list');
-const doawnloadBtn = document.querySelector('.doawnload-btn');
-const doawnloadsButtons = document.querySelectorAll('.doawnload-office');
-const progressBox = document.querySelector('.progress');
-const progressStatus = progressBox.querySelector('.progress__status');
-const progressBar = progressBox.querySelector('.progress-bar');
-const programList = document.querySelectorAll('.programs > li');
-portalsForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const formValues = getFormPortalValues();
 
-  const checkedDomains = DOMAINS.filter((domaind) => formValues.includes(domaind.id));
-  for (checkedPortal of checkedDomains) {
-    await addSiteToStartPage(checkedPortal.url);
-    for (portalDomain of checkedPortal.domains) {
-      const nameDomain = portalDomain.domain;
-      await onCreateEntity(nameDomain, ...portalDomain.values);
-      await addToFavorites(checkedPortal.name, checkedPortal.url);
-    }
-  }
+const main = document.querySelector('.main');
+const checkedNavRadio = document.querySelector('.menu-item__radio:checked');
+const navRadios = document.querySelectorAll('.menu-item__radio');
+let prevNavRadio = checkedNavRadio.value;
 
-  await disableAllActiveXRules();
-  await disableIntranetCompatibilityMode();
-  await disableIntranetMSCompatibilityMode();
-  await allowPopupWindows();
-  await disableCheckServerHttp();
-  await setupSecurityProtocols();
+const portals = DOMAINS.map((domain) => {
+  const checkBox = document.createElement('input');
+  const label = document.createElement('label');
+  const groupBox = document.createElement('div');
+  checkBox.setAttribute('type', 'checkbox');
+  checkBox.name = domain.name;
+  checkBox.id = domain.name;
+  checkBox.value = domain.id;
+  checkBox.classList.add('portal-checkbox');
+  groupBox.classList.add('group-portal');
+  label.setAttribute('for', checkBox.name);
+  label.textContent = domain.name;
+  groupBox.append(checkBox, label);
+  return groupBox;
 });
 
+function initPortalsContent() {
+  const fieldSet = document.createElement('fieldset');
+  const legend = document.createElement('legend');
+  const btn = document.createElement('button');
+  const form = document.createElement('form');
+  form.id = 'portals';
+  fieldSet.className = 'portal-list';
+  legend.className = 'portals__title';
+  legend.textContent = 'Порталы';
+  btn.className = 'btn';
+  btn.type = 'submit';
+  btn.textContent = 'Настроить';
+  fieldSet.append(legend);
+  fieldSet.append(...portals);
+  form.append(fieldSet, btn);
+  main.append(form);
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    let formValues = [];
+    const checkBoxValues = fieldSet.querySelectorAll('input[type=checkbox]:checked');
+    checkBoxValues.forEach((checkBoxVal) => {
+      formValues = [...formValues, checkBoxVal.value];
+    });
+    formValues.map(Number);
+    const checkedDomains = DOMAINS.filter((domaind) => formValues.includes(domaind.id));
+    for (checkedPortal of checkedDomains) {
+      await addSiteToStartPage(checkedPortal.url);
+      for (portalDomain of checkedPortal.domains) {
+        const nameDomain = portalDomain.domain;
+        await onCreateEntity(nameDomain, ...portalDomain.values);
+        await addToFavorites(checkedPortal.name, checkedPortal.url);
+      }
+    }
+  
+    await disableAllActiveXRules();
+    await disableIntranetCompatibilityMode();
+    await disableIntranetMSCompatibilityMode();
+    await allowPopupWindows();
+    await disableCheckServerHttp();
+    await setupSecurityProtocols();
+    alert('Настройка завершена успешно!');
+  });
+ 
+}
+
+
+
+function initContentByNav(checkedValue) {
+  if (prevNavRadio === checkedValue) {
+    return;
+  }
+  main.innerHTML = '';
+  switch (checkedValue) {
+    case 'portals':
+      initPortalsContent();
+      break;
+    case 'programms':
+      initProgrammsContent();
+      break;
+    default:
+      return null;
+  }
+  prevNavRadio = checkedValue;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-  doawnloadsButtons.forEach((downloadBtn, key) => {
-    downloadBtn.addEventListener('click', (e) => {
-      ipcRenderer.send('load-office', key);
+  initPortalsContent();
+  navRadios.forEach((navRadio) => {
+    navRadio.addEventListener('change', (e) => {
+      initContentByNav(e.target.value);
     });
   });
-  doawnloadBtn.addEventListener('click', (e) => {
-    ipcRenderer.send('open-new-window');
-  });
+
   ipcRenderer.on('progress', (event, progress, message) => getProgressDownlaod(progress, message));
   ipcRenderer.on('load-office', (event, savePath, programm) => downloadTorrent(savePath, programm));
 });
@@ -72,22 +128,6 @@ const getFormPortalValues = () => {
   });
   return formValues.map(Number);
 };
-
-const portals = DOMAINS.map((domain) => {
-  const checkBox = document.createElement('input');
-  const label = document.createElement('label');
-  const groupBox = document.createElement('div');
-  checkBox.setAttribute('type', 'checkbox');
-  checkBox.name = domain.name;
-  checkBox.id = domain.name;
-  checkBox.value = domain.id;
-  label.setAttribute('for', checkBox.name);
-  label.textContent = domain.name;
-  groupBox.append(label, checkBox);
-  return groupBox;
-});
-
-portalsFieldset.append(...portals);
 
 async function onCreateEntity(name, ...values) {
   try {
@@ -225,6 +265,10 @@ async function setupSecurityProtocols() {
 }
 
 function getProgressDownlaod(progress, message) {
+  const doawnloadBtn = document.querySelector('.doawnload-btn');
+  const progressBox = document.querySelector('.progress');
+  const progressStatus = progressBox.querySelector('.progress__status');
+  const progressBar = progressBox.querySelector('.progress-bar');
   doawnloadBtn.setAttribute('disabled', true);
   if (message) {
     doawnloadBtn.removeAttribute('disabled');
@@ -236,22 +280,66 @@ function getProgressDownlaod(progress, message) {
 }
 
 function downloadTorrent(savePath, program) {
-  console.log({ program });
+  const magnetUrl = program.url;
+  const programList = document.querySelectorAll('.programs > li');
   const programmNode = programList[program.id];
   const progressBar = programmNode.querySelector('.progress-bar');
+  const downloadBtn = programmNode.querySelector('.doawnload-torrent');
   const progressStatus = programmNode.querySelector('.progress__status');
-  const magnetUrl = program.url;
-
   const client = new WebTorrent();
   client.add(magnetUrl, { path: savePath }, (torrent) => {
     const totalBytes = parseInt(torrent.length, 10);
     torrent.on('download', (bytes) => {
+      downloadBtn.setAttribute('disabled', true);
       const progress = (torrent.downloaded / totalBytes) * 100;
       progressBar.value = Math.round(progress);
       progressStatus.textContent = `${Math.round(progress)}%`;
     });
     torrent.on('done', () => {
+      doawnloadBtn.removeAttribute('disabled');
       progressStatus.textContent = `Download completed!`;
     });
+    torrent.on('ready');
   });
+}
+
+function initProgrammsContent() {
+  main.innerHTML = `
+      <h3 class="programms-title">Проаграммы:</h3>
+        <ul class="programs">
+            <li class="programs-item">
+                <button class="doawnload-btn">Скачать авест</button>
+                <div class="progress">
+                    <span class="progress__status">Loading:</span>
+                    <progress class="progress-bar" value="0" max="100"></progress>
+                </div>
+            </li>
+            <li class="programs-item">
+                <button class="doawnload-torrent">Скачать office</button>
+                <div class="progress">
+                    <span class="progress__status">Loading:</span>
+                    <progress class="progress-bar" value="0" max="100"></progress>
+                </div>
+            </li>
+            <li class="programs-item">
+                <button class="doawnload-torrent">Скачать Acrobat Reader</button>
+                <div class="progress">
+                    <span class="progress__status">Loading:</span>
+                    <progress class="progress-bar" value="0" max="100"></progress>
+                </div>
+            </li>
+        </ul>`;
+        const progressBox = document.querySelector('.progress');
+        const progressStatus = progressBox.querySelector('.progress__status');
+        const progressBar = progressBox.querySelector('.progress-bar');
+        const doawnloadBtn = document.querySelector('.doawnload-btn');
+        const doawnloadsButtons = document.querySelectorAll('.doawnload-torrent');
+        doawnloadsButtons.forEach((downloadBtn, key) => {
+          downloadBtn.addEventListener('click', (e) => {
+            ipcRenderer.send('load-office', key);
+          });
+        });
+        doawnloadBtn.addEventListener('click', (e) => {
+          ipcRenderer.send('open-new-window');
+        });
 }

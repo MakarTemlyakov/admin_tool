@@ -1,8 +1,15 @@
-const { app, BrowserWindow, ipcMain, dialog, getCurrentWindow } = require('electron');
+const {
+  app,
+  BrowserWindow,
+  dialog,
+  getCurrentWindow,
+  ipcMain,
+  Menu,
+  MenuItem,
+} = require('electron');
 const fs = require('fs');
 const axios = require('axios');
 const { PROGRAMM } = require('./constants');
-
 let mainWindow;
 
 function createWindow() {
@@ -17,6 +24,7 @@ function createWindow() {
 
   mainWindow.loadFile('index.html');
   mainWindow.webContents.openDevTools();
+
   return mainWindow;
 }
 
@@ -55,7 +63,6 @@ ipcMain.on('open-new-window', async () => {
     .then((response) => {
       const totalBytes = parseInt(response.headers['content-length'], 10);
       let receivedBytes = 0;
-      console.log({ data: response.data });
       response.data.on('data', (chunk) => {
         receivedBytes += chunk.length;
         const progress = (receivedBytes / totalBytes) * 100;
@@ -78,7 +85,6 @@ ipcMain.on('open-new-window', async () => {
 });
 
 ipcMain.on('load-office', (e, id) => {
-  console.log({ id });
   const programm = getProgrammById(id);
   const pathFiles = dialog.showOpenDialogSync({
     properties: ['createDirectory', 'openDirectory'],
