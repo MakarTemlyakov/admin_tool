@@ -29,35 +29,34 @@ let prevNavRadio = checkedNavRadio.value;
 const portals = DOMAINS.map((domain) => {
   const checkBox = document.createElement('input');
   const label = document.createElement('label');
-  const groupBox = document.createElement('div');
+  const checkBoxItem = document.createElement('li');
+  const divBox = document.createElement('div');
   checkBox.setAttribute('type', 'checkbox');
   checkBox.name = domain.name;
   checkBox.id = domain.name;
   checkBox.value = domain.id;
   checkBox.classList.add('portal-checkbox');
-  groupBox.classList.add('group-portal');
+  checkBoxItem.classList.add('checkbox-item');
+  divBox.classList.add('label-wrap');
   label.setAttribute('for', checkBox.name);
   label.textContent = domain.name;
-  groupBox.append(checkBox, label);
-  return groupBox;
+  checkBoxItem.append(checkBox, label, divBox);
+  return checkBoxItem;
 });
 
 function initPortalsContent() {
-  const fieldSet = document.createElement('fieldset');
-  const legend = document.createElement('legend');
   const btn = document.createElement('button');
   const form = document.createElement('form');
+  const checkboxList = document.createElement('ul');
   form.id = 'portals';
-  fieldSet.className = 'portal-list';
-  legend.className = 'portals__title';
-  legend.textContent = 'Порталы';
   btn.className = 'btn';
   btn.type = 'submit';
   btn.textContent = 'Настроить';
-  fieldSet.append(legend);
-  fieldSet.append(...portals);
-  form.append(fieldSet, btn);
+  checkboxList.classList.add('checkbox-list');
+  checkboxList.append(...portals);
+  form.append(checkboxList);
   main.append(form);
+  main.append(btn)
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
