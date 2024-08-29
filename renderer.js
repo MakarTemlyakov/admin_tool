@@ -18,6 +18,7 @@ const path = require('path');
 const os = require('os');
 const fs = require('fs');
 const WebTorrent = require('webtorrent-hybrid');
+const { ICONS } = require('./icons');
 
 const btn = document.querySelector('.btn');
 
@@ -35,12 +36,35 @@ const portals = DOMAINS.map((domain) => {
   checkBox.name = domain.name;
   checkBox.id = domain.name;
   checkBox.value = domain.id;
+
   checkBox.classList.add('portal-checkbox');
   checkBoxItem.classList.add('checkbox-item');
   divBox.classList.add('label-wrap');
   label.setAttribute('for', checkBox.name);
   label.textContent = domain.name;
   checkBoxItem.append(checkBox, label, divBox);
+  divBox.addEventListener('click', (e) => {
+    if (divBox.classList.contains('hover') && !checkBox.checked) {
+      checkBox.checked = true;
+      divBox.classList.add('checked');
+      divBox.classList.remove('hover');
+      divBox.innerHTML = ICONS.addIcon;
+    } else {
+      checkBox.checked = false;
+      divBox.classList.remove('checked');
+      divBox.classList.add('hover');
+      divBox.innerHTML = ICONS.plusIcon;
+    }
+  });
+  label.addEventListener('mouseenter', (e) => {
+    if (!checkBox.checked) {
+      divBox.classList.add('hover');
+      divBox.innerHTML = ICONS.plusIcon;
+    }
+  });
+  divBox.addEventListener('mouseleave', (e) => {
+    divBox.classList.remove('hover');
+  });
   return checkBoxItem;
 });
 
@@ -52,16 +76,17 @@ function initPortalsContent() {
   btn.className = 'btn';
   btn.type = 'submit';
   btn.textContent = 'Настроить';
+  btn.form = 'portals';
   checkboxList.classList.add('checkbox-list');
   checkboxList.append(...portals);
   form.append(checkboxList);
   main.append(form);
-  main.append(btn)
+  main.append(btn);
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     let formValues = [];
-    const checkBoxValues = fieldSet.querySelectorAll('input[type=checkbox]:checked');
+    const checkBoxValues = form.querySelectorAll('input[type=checkbox]:checked');
     checkBoxValues.forEach((checkBoxVal) => {
       formValues = [...formValues, checkBoxVal.value];
     });
@@ -75,7 +100,7 @@ function initPortalsContent() {
         await addToFavorites(checkedPortal.name, checkedPortal.url);
       }
     }
-  
+
     await disableAllActiveXRules();
     await disableIntranetCompatibilityMode();
     await disableIntranetMSCompatibilityMode();
@@ -84,10 +109,11 @@ function initPortalsContent() {
     await setupSecurityProtocols();
     alert('Настройка завершена успешно!');
   });
- 
+
+  btn.addEventListener('click', () => {
+    form.dispatchEvent(new Event('submit')); // Вызываем событие submit на форме
+  });
 }
-
-
 
 function initContentByNav(checkedValue) {
   if (prevNavRadio === checkedValue) {
@@ -328,17 +354,17 @@ function initProgrammsContent() {
                 </div>
             </li>
         </ul>`;
-        const progressBox = document.querySelector('.progress');
-        const progressStatus = progressBox.querySelector('.progress__status');
-        const progressBar = progressBox.querySelector('.progress-bar');
-        const doawnloadBtn = document.querySelector('.doawnload-btn');
-        const doawnloadsButtons = document.querySelectorAll('.doawnload-torrent');
-        doawnloadsButtons.forEach((downloadBtn, key) => {
-          downloadBtn.addEventListener('click', (e) => {
-            ipcRenderer.send('load-office', key);
-          });
-        });
-        doawnloadBtn.addEventListener('click', (e) => {
-          ipcRenderer.send('open-new-window');
-        });
+  const progressBox = document.querySelector('.progress');
+  const progressStatus = progressBox.querySelector('.progress__status');
+  const progressBar = progressBox.querySelector('.progress-bar');
+  const doawnloadBtn = document.querySelector('.doawnload-btn');
+  const doawnloadsButtons = document.querySelectorAll('.doawnload-torrent');
+  doawnloadsButtons.forEach((downloadBtn, key) => {
+    downloadBtn.addEventListener('click', (e) => {
+      ipcRenderer.send('load-office', key);
+    });
+  });
+  doawnloadBtn.addEventListener('click', (e) => {
+    ipcRenderer.send('open-new-window');
+  });
 }
