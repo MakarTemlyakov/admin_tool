@@ -188,3 +188,9 @@ ul {
   background: #4574fff5;
   color: #ffffff;
 }
+
+.doawnload-torrent:disabled,
+.btn:disabled {
+  cursor: not-allowed;
+  background-color: #a9a9a9cc;
+}

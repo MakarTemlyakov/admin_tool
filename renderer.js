@@ -20,12 +20,23 @@ const fs = require('fs');
 const WebTorrent = require('webtorrent-hybrid');
 const { ICONS } = require('./icons');
 
-const btn = document.querySelector('.btn');
-
 const main = document.querySelector('.main');
 const checkedNavRadio = document.querySelector('.menu-item__radio:checked');
 const navRadios = document.querySelectorAll('.menu-item__radio');
 let prevNavRadio = checkedNavRadio.value;
+
+function isDisabled() {
+  const form = document.querySelector('form');
+  const btn = document.querySelector('.btn');
+  const checkBoxValues = Array.from(new FormData(form).values());
+  const isDisabled = checkBoxValues.length > 0 ? false : true;
+
+  if (isDisabled) {
+    btn.setAttribute('disabled', true);
+  } else {
+    btn.removeAttribute('disabled');
+  }
+}
 
 const portals = DOMAINS.map((domain) => {
   const checkBox = document.createElement('input');
@@ -49,11 +60,13 @@ const portals = DOMAINS.map((domain) => {
       divBox.classList.add('checked');
       divBox.classList.remove('hover');
       divBox.innerHTML = ICONS.addIcon;
+      isDisabled();
     } else {
       checkBox.checked = false;
       divBox.classList.remove('checked');
       divBox.classList.add('hover');
       divBox.innerHTML = ICONS.plusIcon;
+      isDisabled();
     }
   });
   label.addEventListener('mouseenter', (e) => {
@@ -69,14 +82,16 @@ const portals = DOMAINS.map((domain) => {
 });
 
 function initPortalsContent() {
-  const btn = document.createElement('button');
   const form = document.createElement('form');
+  const checkBoxValues = Array.from(new FormData(form).values());
+  const btn = document.createElement('button');
   const checkboxList = document.createElement('ul');
   form.id = 'portals';
   btn.className = 'btn';
   btn.type = 'submit';
   btn.textContent = 'Настроить';
   btn.form = 'portals';
+  btn.disabled = true;
   checkboxList.classList.add('checkbox-list');
   checkboxList.append(...portals);
   form.append(checkboxList);
@@ -85,12 +100,7 @@ function initPortalsContent() {
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    let formValues = [];
-    const checkBoxValues = form.querySelectorAll('input[type=checkbox]:checked');
-    checkBoxValues.forEach((checkBoxVal) => {
-      formValues = [...formValues, checkBoxVal.value];
-    });
-    formValues.map(Number);
+    checkBoxValues.map(Number);
     const checkedDomains = DOMAINS.filter((domaind) => formValues.includes(domaind.id));
     for (checkedPortal of checkedDomains) {
       await addSiteToStartPage(checkedPortal.url);
@@ -144,15 +154,6 @@ document.addEventListener('DOMContentLoaded', () => {
   ipcRenderer.on('progress', (event, progress, message) => getProgressDownlaod(progress, message));
   ipcRenderer.on('load-office', (event, savePath, programm) => downloadTorrent(savePath, programm));
 });
-
-const getFormPortalValues = () => {
-  let formValues = [];
-  const checkBoxValues = portalsFieldset.querySelectorAll('input[type=checkbox]:checked');
-  checkBoxValues.forEach((checkBoxVal) => {
-    formValues = [...formValues, checkBoxVal.value];
-  });
-  return formValues.map(Number);
-};
 
 async function onCreateEntity(name, ...values) {
   try {
@@ -310,6 +311,7 @@ function downloadTorrent(savePath, program) {
   const programmNode = programList[program.id];
   const progressBar = programmNode.querySelector('.progress-bar');
   const downloadBtn = programmNode.querySelector('.doawnload-torrent');
+  console.log({ downloadBtn });
   const progressStatus = programmNode.querySelector('.progress__status');
   const client = new WebTorrent();
   client.add(magnetUrl, { path: savePath }, (torrent) => {
@@ -321,7 +323,7 @@ function downloadTorrent(savePath, program) {
       progressStatus.textContent = `${Math.round(progress)}%`;
     });
     torrent.on('done', () => {
-      doawnloadBtn.removeAttribute('disabled');
+      downloadBtn.removeAttribute('disabled');
       progressStatus.textContent = `Download completed!`;
     });
     torrent.on('ready');
@@ -330,7 +332,6 @@ function downloadTorrent(savePath, program) {
 
 function initProgrammsContent() {
   main.innerHTML = `
-      <h3 class="programms-title">Проаграммы:</h3>
         <ul class="programs">
             <li class="programs-item">
                 <button class="doawnload-btn">Скачать авест</button>
