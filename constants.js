@@ -19,6 +19,7 @@ const DOMAINS = [
     id: 0,
     name: 'Налоговый портал',
     url: 'https://www.portal.nalog.gov.by/eds1',
+    isChecked: false,
     domains: [
       { id: 0, domain: 'gov.by', values: ['*.nalog', '*.nalog'] },
       {
@@ -32,12 +33,14 @@ const DOMAINS = [
     id: 1,
     name: 'Cчета фактуры',
     url: 'http://vat.gov.by/mainPage/',
+    isChecked: false,
     domains: [{ id: 0, domain: 'vat.gov.by', values: [] }],
   },
   {
     id: 2,
     name: 'ФСЗН',
     url: 'http://portal2.ssf.gov.by/mainPage/',
+    isChecked: false,
     domains: [
       { id: 0, domain: 'nces.by', values: ['*.usd'] },
       { id: 1, domain: 'ssf.gov.by', values: ['*.portal2'] },
@@ -46,12 +49,14 @@ const DOMAINS = [
   {
     id: 3,
     name: 'Электронный респондент',
+    isChecked: false,
     url: 'http://e-respondent.belstat.gov.by/belstat/',
     domains: [{ id: 0, domain: 'e-respondent.belstat.gov.by', values: [] }],
   },
   {
     id: 4,
     name: 'НАЦ Банк (Портал валютных договоров)',
+    isChecked: false,
     url: 'http://rvd.nbrb.by/nbrbResidentUi/#/',
     domains: [
       { id: 0, domain: 'raschet.by', values: ['*.legal', '*.ilegal', '*.oauth', '*.ioauth'] },
@@ -61,6 +66,7 @@ const DOMAINS = [
   {
     id: 5,
     name: 'Центр по налогам и сборам (СККО)',
+    isChecked: false,
     url: 'https://lk.skko.by/',
     domains: [
       { id: 0, domain: 'skko.by', values: ['*.lk'] },

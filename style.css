@@ -79,7 +79,7 @@ ul {
   display: none;
 }
 
-.checkbox-item {
+.checkbox__item {
   width: 100%;
   height: 130px;
   display: flex;
@@ -193,4 +193,14 @@ ul {
 .btn:disabled {
   cursor: not-allowed;
   background-color: #a9a9a9cc;
+}
+
+.group-checkbox {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
 }

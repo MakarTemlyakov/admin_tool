@@ -19,7 +19,14 @@ const os = require('os');
 const fs = require('fs');
 const WebTorrent = require('webtorrent-hybrid');
 const { ICONS } = require('./icons');
-
+const { checkBoxTemplate } = require('./ui/templates/checkboxTemplate');
+const { listItemsTemplate } = require('./ui/templates/listItemsTemplate');
+const { buttonTemplate } = require('./ui/templates/buttonTemplate');
+const { formTemplate } = require('./ui/templates/formTemplate');
+const PortalRepository = require('./repositories/PortalRepository');
+const PortalService = require('./services/PortalService');
+const portalRepository = new PortalRepository(DOMAINS);
+const portalService = new PortalService(portalRepository);
 const main = document.querySelector('.main');
 const checkedNavRadio = document.querySelector('.menu-item__radio:checked');
 const navRadios = document.querySelectorAll('.menu-item__radio');
@@ -28,89 +35,81 @@ let prevNavRadio = checkedNavRadio.value;
 function isDisabled() {
   const form = document.querySelector('form');
   const btn = document.querySelector('.btn');
-  const checkBoxValues = Array.from(new FormData(form).values());
-  const isDisabled = checkBoxValues.length > 0 ? false : true;
-
-  if (isDisabled) {
-    btn.setAttribute('disabled', true);
-  } else {
+  const hasCheckedPortals = DOMAINS.some((portal) => portal.isChecked);
+  if (hasCheckedPortals) {
     btn.removeAttribute('disabled');
+  } else {
+    btn.setAttribute('disabled', true);
   }
 }
 
 const portals = DOMAINS.map((domain) => {
-  const checkBox = document.createElement('input');
-  const label = document.createElement('label');
-  const checkBoxItem = document.createElement('li');
-  const divBox = document.createElement('div');
-  checkBox.setAttribute('type', 'checkbox');
-  checkBox.name = domain.name;
-  checkBox.id = domain.name;
-  checkBox.value = domain.id;
+  const checkBox = checkBoxTemplate({
+    name: domain.name,
+    id: domain.id,
+    value: domain.id,
+    className: 'portal-checkbox',
+    label: domain.name,
+    checked: domain.isChecked,
+  });
 
-  checkBox.classList.add('portal-checkbox');
-  checkBoxItem.classList.add('checkbox-item');
-  divBox.classList.add('label-wrap');
-  label.setAttribute('for', checkBox.name);
-  label.textContent = domain.name;
-  checkBoxItem.append(checkBox, label, divBox);
-  divBox.addEventListener('click', (e) => {
-    if (divBox.classList.contains('hover') && !checkBox.checked) {
+  const wrapLabel = checkBox.querySelector('.label-wrap');
+  const label = checkBox.querySelector('label');
+  wrapLabel.addEventListener('click', (e) => {
+    if (wrapLabel.classList.contains('hover') && !checkBox.checked) {
       checkBox.checked = true;
-      divBox.classList.add('checked');
-      divBox.classList.remove('hover');
-      divBox.innerHTML = ICONS.addIcon;
+      wrapLabel.classList.add('checked');
+      wrapLabel.classList.remove('hover');
+      wrapLabel.innerHTML = ICONS.addIcon;
+      domain.isChecked = true;
       isDisabled();
     } else {
       checkBox.checked = false;
-      divBox.classList.remove('checked');
-      divBox.classList.add('hover');
-      divBox.innerHTML = ICONS.plusIcon;
+      wrapLabel.classList.remove('checked');
+      wrapLabel.classList.add('hover');
+      wrapLabel.innerHTML = ICONS.plusIcon;
+      domain.isChecked = false;
       isDisabled();
     }
   });
   label.addEventListener('mouseenter', (e) => {
     if (!checkBox.checked) {
-      divBox.classList.add('hover');
-      divBox.innerHTML = ICONS.plusIcon;
+      wrapLabel.classList.add('hover');
+      wrapLabel.innerHTML = ICONS.plusIcon;
     }
   });
-  divBox.addEventListener('mouseleave', (e) => {
-    divBox.classList.remove('hover');
+  wrapLabel.addEventListener('mouseleave', (e) => {
+    wrapLabel.classList.remove('hover');
   });
-  return checkBoxItem;
+  console.log({ checkBox });
+  return checkBox;
 });
 
 function initPortalsContent() {
-  const form = document.createElement('form');
-  const checkBoxValues = Array.from(new FormData(form).values());
-  const btn = document.createElement('button');
-  const checkboxList = document.createElement('ul');
-  form.id = 'portals';
-  btn.className = 'btn';
-  btn.type = 'submit';
-  btn.textContent = 'Настроить';
-  btn.form = 'portals';
-  btn.disabled = true;
-  checkboxList.classList.add('checkbox-list');
-  checkboxList.append(...portals);
-  form.append(checkboxList);
+  const form = formTemplate({ id: 'portals' });
+  const checkboxList = listItemsTemplate({
+    listClassName: 'checkbox-list',
+    itemClassName: 'checkbox__item',
+    countListItems: DOMAINS.length,
+    insertItems: portals,
+  });
+  const button = buttonTemplate({
+    className: 'btn',
+    id: 'portals',
+    type: 'submit',
+    textContent: 'Настроить',
+    disabled: true,
+    form: 'portals',
+  });
+
+  form.appendChild(checkboxList);
   main.append(form);
-  main.append(btn);
+  main.append(button);
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    checkBoxValues.map(Number);
-    const checkedDomains = DOMAINS.filter((domaind) => formValues.includes(domaind.id));
-    for (checkedPortal of checkedDomains) {
-      await addSiteToStartPage(checkedPortal.url);
-      for (portalDomain of checkedPortal.domains) {
-        const nameDomain = portalDomain.domain;
-        await onCreateEntity(nameDomain, ...portalDomain.values);
-        await addToFavorites(checkedPortal.name, checkedPortal.url);
-      }
-    }
-
+    const formValues = await portalService.getCheckedPortals();
+    await portalService.applySettings(formValues);
     await disableAllActiveXRules();
     await disableIntranetCompatibilityMode();
     await disableIntranetMSCompatibilityMode();
@@ -120,7 +119,7 @@ function initPortalsContent() {
     alert('Настройка завершена успешно!');
   });
 
-  btn.addEventListener('click', () => {
+  button.addEventListener('click', () => {
     form.dispatchEvent(new Event('submit')); // Вызываем событие submit на форме
   });
 }
@@ -155,24 +154,6 @@ document.addEventListener('DOMContentLoaded', () => {
   ipcRenderer.on('load-office', (event, savePath, programm) => downloadTorrent(savePath, programm));
 });
 
-async function onCreateEntity(name, ...values) {
-  try {
-    const keys = [`${REG_DOMAINS}\\${name}`];
-    const subkeys = values.length > 0 ? values.map((key) => `${REG_DOMAINS}\\${name}\\${key}`) : [];
-    const regKeys = subkeys.length > 0 ? [...keys, ...subkeys] : keys;
-    const regInsertedKeys = subkeys.length > 0 ? subkeys : keys;
-    await regedit.createKey([...regKeys]);
-
-    for (insertedKey of regInsertedKeys) {
-      const val = { [insertedKey]: { '*': { value: 2, type: 'REG_DWORD' } } };
-      await regedit.putValue(val);
-    }
-    console.log('Operation finished successfull');
-  } catch (error) {
-    console.error('Error settins into regestier', error);
-  }
-}
-
 async function disableAllActiveXRules() {
   try {
     const trustedSitesKey = TRUSTED_SITES_ZONE;
@@ -188,37 +169,6 @@ async function disableAllActiveXRules() {
     }
   } catch (error) {
     console.error('Error settins into regestier', error);
-  }
-}
-
-async function addSiteToStartPage(siteUrl) {
-  try {
-    const ieMainKey = await regedit.list(REG_IE_START_PAGE);
-    const keyValue = `Secondary Start Pages`;
-    const sites1 = ieMainKey[REG_IE_START_PAGE].values['Secondary Start Pages'];
-    const value = {
-      [REG_IE_START_PAGE]: {
-        [keyValue]: { value: [...sites1.value, siteUrl], type: 'REG_MULTI_SZ' },
-      },
-    };
-
-    await regedit.putValue(value);
-  } catch (err) {
-    console.log('error', err);
-  }
-  console.log('sited add to start page succsessfull');
-}
-
-async function addToFavorites(nameSite, siteUrl) {
-  const favoritesPath = path.join(os.homedir(), 'Favorites', `${nameSite}.url`);
-  const favoritesBarPath = path.join(os.homedir(), 'Favorites', 'Links', `${nameSite}.url`);
-  try {
-    const urlFileContent = `[InternetShortcut]\r\nURL=${siteUrl}\r\nIconFile=https://www.google.com/favicon.ico\r\nIconIndex=0\r\n`;
-    fs.writeFileSync(favoritesPath, urlFileContent);
-    fs.writeFileSync(favoritesBarPath, urlFileContent);
-    console.log('site success addedd');
-  } catch (err) {
-    console.error('err', err);
   }
 }
 
