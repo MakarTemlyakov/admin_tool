@@ -4,10 +4,16 @@ class PortalRepository {
   constructor(domains) {
     this.domains = domains;
   }
-
   getAllPortals() {
     return this.domains.map(
-      (domain) => new Portal(domain.id, domain.name, domain.url, domain.domains, domain.isChecked),
+      (domain) =>
+        new Portal({
+          id: domain.id,
+          name: domain.name,
+          url: domain.url,
+          isChecked: domain.isChecked,
+          domains: domain.domains,
+        }),
     );
   }
 }

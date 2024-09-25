@@ -11,6 +11,7 @@ const {
   TORRENT_URL_OFFICE,
   PROGRAMM,
   AVEST_URL,
+  REGISTRY,
 } = require('./constants');
 const { ipcRenderer } = require('electron');
 const regedit = require('regedit').promisified;
@@ -25,8 +26,12 @@ const { buttonTemplate } = require('./ui/templates/buttonTemplate');
 const { formTemplate } = require('./ui/templates/formTemplate');
 const PortalRepository = require('./repositories/PortalRepository');
 const PortalService = require('./services/PortalService');
+const RegistryRepository = require('./repositories/RegistryRepository');
+const RegisrtyService = require('./services/RegisrtyService');
 const portalRepository = new PortalRepository(DOMAINS);
-const portalService = new PortalService(portalRepository);
+const registryRepository = new RegistryRepository(REGISTRY);
+const regisrtyService = new RegisrtyService(registryRepository);
+const portalService = new PortalService(portalRepository, registryRepository);
 const main = document.querySelector('.main');
 const checkedNavRadio = document.querySelector('.menu-item__radio:checked');
 const navRadios = document.querySelectorAll('.menu-item__radio');
@@ -81,7 +86,6 @@ const portals = DOMAINS.map((domain) => {
   wrapLabel.addEventListener('mouseleave', (e) => {
     wrapLabel.classList.remove('hover');
   });
-  console.log({ checkBox });
   return checkBox;
 });
 
@@ -110,12 +114,9 @@ function initPortalsContent() {
     e.preventDefault();
     const formValues = await portalService.getCheckedPortals();
     await portalService.applySettings(formValues);
-    await disableAllActiveXRules();
-    await disableIntranetCompatibilityMode();
-    await disableIntranetMSCompatibilityMode();
-    await allowPopupWindows();
-    await disableCheckServerHttp();
-    await setupSecurityProtocols();
+    await regisrtyService.disableAllActiveXRules(ACTIVE_X_OPTIONS);
+    await regisrtyService.onChangeRegistryRule(REGISTRY);
+
     alert('Настройка завершена успешно!');
   });
 
@@ -154,92 +155,6 @@ document.addEventListener('DOMContentLoaded', () => {
   ipcRenderer.on('load-office', (event, savePath, programm) => downloadTorrent(savePath, programm));
 });
 
-async function disableAllActiveXRules() {
-  try {
-    const trustedSitesKey = TRUSTED_SITES_ZONE;
-    const activeValues = Object.keys(ACTIVE_X_OPTIONS);
-    for (activeValue of activeValues) {
-      let value = activeValue === '2702' || activeValue === '120B' ? 3 : 0;
-      const regValue = {
-        [trustedSitesKey]: {
-          [activeValue]: { value: value, type: 'REG_DWORD' },
-        },
-      };
-      await regedit.putValue(regValue);
-    }
-  } catch (error) {
-    console.error('Error settins into regestier', error);
-  }
-}
-
-async function allowPopupWindows() {
-  const popBlockerValue = 'PopupMgr';
-  const value = {
-    [REG_IE_POPUP_BLOCKER]: {
-      [popBlockerValue]: { value: 0, type: 'REG_DWORD' },
-    },
-  };
-  await regedit.putValue(value);
-}
-
-async function disableIntranetCompatibilityMode() {
-  const compatibilityModeValue = 'IntranetCompatibilityMode';
-  const value = {
-    [REG_IE_INTRANET_COMPATIBILITY]: {
-      [compatibilityModeValue]: { value: 0, type: 'REG_DWORD' },
-    },
-  };
-
-  await regedit.putValue(value);
-}
-
-async function disableIntranetMSCompatibilityMode() {
-  const msCompatibilityModeValue = 'MSCompatibilityMode';
-  const value = {
-    [REG_IE_MSCOMPATIBILITY]: {
-      [msCompatibilityModeValue]: { value: 0, type: 'REG_DWORD' },
-    },
-  };
-
-  await regedit.putValue(value);
-}
-
-async function disableCheckServerHttp() {
-  try {
-    const REG_VALUE_FLAGS = 'Flags';
-    const value = {
-      [TRUSTED_SITES_ZONE]: {
-        [REG_VALUE_FLAGS]: {
-          value: 67,
-          type: 'REG_DWORD',
-        },
-      },
-    };
-    await regedit.putValue(value);
-    console.log('disabled https check success');
-  } catch (error) {
-    console.log('http flags doesnt disable', error);
-  }
-}
-
-async function setupSecurityProtocols() {
-  try {
-    const SECURE_PROTOCOLS_VALUE = 'SecureProtocols';
-    const value = {
-      [REG_SECURE_PROTOCOLS]: {
-        [SECURE_PROTOCOLS_VALUE]: {
-          value: 9864,
-          type: 'REG_DWORD',
-        },
-      },
-    };
-    await regedit.putValue(value);
-    console.log('security protocols setup successfull');
-  } catch (err) {
-    console.error('securyity protocols isnt setup');
-  }
-}
-
 function getProgressDownlaod(progress, message) {
   const doawnloadBtn = document.querySelector('.doawnload-btn');
   const progressBox = document.querySelector('.progress');
@@ -261,7 +176,6 @@ function downloadTorrent(savePath, program) {
   const programmNode = programList[program.id];
   const progressBar = programmNode.querySelector('.progress-bar');
   const downloadBtn = programmNode.querySelector('.doawnload-torrent');
-  console.log({ downloadBtn });
   const progressStatus = programmNode.querySelector('.progress__status');
   const client = new WebTorrent();
   client.add(magnetUrl, { path: savePath }, (torrent) => {

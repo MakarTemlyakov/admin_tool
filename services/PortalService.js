@@ -1,6 +1,10 @@
+const { REG_DOMAINS, REG_IE_START_PAGE } = require('../constants');
+const RegistryMapper = require('../mappers/RegistryMapper');
+
 class PortalService {
-  constructor(portalRepository) {
+  constructor(portalRepository, registryRepository) {
     this.portalRepository = portalRepository;
+    this.registryRepository = registryRepository;
   }
 
   async getCheckedPortals() {
@@ -15,11 +19,16 @@ class PortalService {
         values.length > 0 ? values.map((key) => `${REG_DOMAINS}\\${name}\\${key}`) : [];
       const regKeys = subkeys.length > 0 ? [...keys, ...subkeys] : keys;
       const regInsertedKeys = subkeys.length > 0 ? subkeys : keys;
-      await regedit.createKey([...regKeys]);
-
-      for (insertedKey of regInsertedKeys) {
-        const val = { [insertedKey]: { '*': { value: 2, type: 'REG_DWORD' } } };
-        await regedit.putValue(val);
+      await this.registryRepository.createKey([...regKeys]);
+      for (const insertedKey of regInsertedKeys) {
+        const inputData = {
+          key: insertedKey,
+          name: '*',
+          value: 2,
+          type: 'REG_DWORD',
+        };
+        const regValue = RegistryMapper.toRegistry(inputData);
+        await this.registryRepository.updateValueByName(regValue);
       }
       console.log('Operation finished successfull');
     } catch (error) {
@@ -45,13 +54,15 @@ class PortalService {
       const ieMainKey = await regedit.list(REG_IE_START_PAGE);
       const keyValue = `Secondary Start Pages`;
       const sites1 = ieMainKey[REG_IE_START_PAGE].values['Secondary Start Pages'];
-      const value = {
-        [REG_IE_START_PAGE]: {
-          [keyValue]: { value: [...sites1.value, siteUrl], type: 'REG_MULTI_SZ' },
-        },
+      const inputData = {
+        key: REG_IE_START_PAGE,
+        name: keyValue,
+        value: [...sites1.value, siteUrl],
+        type: 'REG_MULTI_SZ',
       };
 
-      await regedit.putValue(value);
+      const regValue = RegistryMapper.toRegistry(inputData);
+      await this.registryRepository.updateValueByName(regValue);
     } catch (err) {
       console.log('error', err);
     }

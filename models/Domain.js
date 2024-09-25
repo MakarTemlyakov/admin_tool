@@ -1,9 +1,8 @@
 class Domain {
-  constructor(id, name, values, isChecked) {
+  constructor({ id, name, values }) {
     this.id = id;
     this.name = name;
     this.values = values;
-    this.isChecked = isChecked;
   }
 }
 

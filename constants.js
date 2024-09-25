@@ -14,6 +14,50 @@ const TORRENT_URL_OFFICE =
   'magnet:?xt=urn:btih:2678550B722624B4D0F614197758525936507C2A&tr=http%3A%2F%2Fbt2.t-ru.org%2Fann%3Fmagnet&dn=Microsoft%20Office%202016-2019%20Professional%20Plus%20%2F%20Standard%20%2B%20Visio%20%2B%20Project%2016.0.12527.22105%20(2022.03)%20(W%207-W%2011)%20RePack%20by%20KpoJIuK%20%5BMulti%2FRu%5D';
 const TORRENT_URL_ACROBAT =
   'magnet:?xt=urn:btih:50FD84BC108C0F82265B13F7C95C303C8F4D70B6&tr=http%3A%2F%2Fbt3.t-ru.org%2Fann%3Fmagnet&dn=Adobe%20Acrobat%20Pro%20DC%202021.001.20149%20RePack%20by%20KpoJIuK%20%5B2021%2CMulti%2FRu%5D';
+
+const REGISTRY = {
+  REG_SECURE_PROTOCOLS: {
+    key: REG_SECURE_PROTOCOLS,
+    subkey: {
+      name: 'SecureProtocols',
+      value: 9864,
+      type: 'REG_DWORD',
+    },
+  },
+  REG_IE_INTRANET_COMPATIBILITY: {
+    key: REG_IE_INTRANET_COMPATIBILITY,
+    subkey: {
+      name: 'IntranetCompatibilityMode',
+      value: 0,
+      type: 'REG_DWORD',
+    },
+  },
+  REG_IE_MSCOMPATIBILITY: {
+    key: REG_IE_MSCOMPATIBILITY,
+    subkey: {
+      name: 'MSCompatibilityMode',
+      value: 0,
+      type: 'REG_DWORD',
+    },
+  },
+  REG_IE_POPUP_BLOCKER: {
+    key: REG_IE_POPUP_BLOCKER,
+    subkey: {
+      name: 'PopupMgr',
+      value: 0,
+      type: 'REG_DWORD',
+    },
+  },
+  TRUSTED_SITES_ZONE: {
+    key: TRUSTED_SITES_ZONE,
+    subkey: {
+      name: 'Flags',
+      value: 67,
+      type: 'REG_DWORD',
+    },
+  },
+};
+
 const DOMAINS = [
   {
     id: 0,
@@ -21,10 +65,10 @@ const DOMAINS = [
     url: 'https://www.portal.nalog.gov.by/eds1',
     isChecked: false,
     domains: [
-      { id: 0, domain: 'gov.by', values: ['*.nalog', '*.nalog'] },
+      { id: 0, name: 'gov.by', values: ['*.nalog'] },
       {
         id: 1,
-        domain: 'nalog.gov.by',
+        name: 'nalog.gov.by',
         values: ['https://iplk.portal', 'https://lkfl.portal', 'https://www.portal'],
       },
     ],
@@ -34,7 +78,7 @@ const DOMAINS = [
     name: 'Cчета фактуры',
     url: 'http://vat.gov.by/mainPage/',
     isChecked: false,
-    domains: [{ id: 0, domain: 'vat.gov.by', values: [] }],
+    domains: [{ id: 0, name: 'vat.gov.by', values: [] }],
   },
   {
     id: 2,
@@ -42,8 +86,8 @@ const DOMAINS = [
     url: 'http://portal2.ssf.gov.by/mainPage/',
     isChecked: false,
     domains: [
-      { id: 0, domain: 'nces.by', values: ['*.usd'] },
-      { id: 1, domain: 'ssf.gov.by', values: ['*.portal2'] },
+      { id: 0, name: 'nces.by', values: ['*.usd'] },
+      { id: 1, name: 'ssf.gov.by', values: ['*.portal2'] },
     ],
   },
   {
@@ -51,7 +95,7 @@ const DOMAINS = [
     name: 'Электронный респондент',
     isChecked: false,
     url: 'http://e-respondent.belstat.gov.by/belstat/',
-    domains: [{ id: 0, domain: 'e-respondent.belstat.gov.by', values: [] }],
+    domains: [{ id: 0, name: 'e-respondent.belstat.gov.by', values: [] }],
   },
   {
     id: 4,
@@ -59,8 +103,8 @@ const DOMAINS = [
     isChecked: false,
     url: 'http://rvd.nbrb.by/nbrbResidentUi/#/',
     domains: [
-      { id: 0, domain: 'raschet.by', values: ['*.legal', '*.ilegal', '*.oauth', '*.ioauth'] },
-      { id: 1, domain: 'nbrb.by', values: ['*.rvd'] },
+      { id: 0, name: 'raschet.by', values: ['*.legal', '*.ilegal', '*.oauth', '*.ioauth'] },
+      { id: 1, name: 'nbrb.by', values: ['*.rvd'] },
     ],
   },
   {
@@ -69,8 +113,8 @@ const DOMAINS = [
     isChecked: false,
     url: 'https://lk.skko.by/',
     domains: [
-      { id: 0, domain: 'skko.by', values: ['*.lk'] },
-      { id: 1, domain: 'support.skno.by', values: [] },
+      { id: 0, name: 'skko.by', values: ['*.lk'] },
+      { id: 1, name: 'support.skno.by', values: [] },
     ],
   },
 ];
@@ -117,4 +161,5 @@ module.exports = {
   TORRENT_URL_OFFICE,
   AVEST_URL,
   PROGRAMM,
+  REGISTRY,
 };
