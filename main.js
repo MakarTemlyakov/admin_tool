@@ -10,6 +10,9 @@ const {
 const fs = require('fs');
 const axios = require('axios');
 const { PROGRAMM } = require('./constants');
+const HttpService = require('./services/HttpService');
+const TorrentService = require('./services/TorrentService');
+
 let mainWindow;
 
 function createWindow() {
@@ -42,9 +45,20 @@ app.on('activate', () => {
   }
 });
 
-ipcMain.on('open-new-window', async () => {
-  let totalBytes = 0;
-  let receivedBytes = 0;
+ipcMain.on('on-download', async (e, id) => {
+  if (id === 0) {
+    const { savePath, programm, url } = await showOpenDialog(id);
+    const httpService = new HttpService(mainWindow);
+    httpService.onLoadData(url, savePath, programm);
+  } else {
+    const { savePath, programm, url } = showOpenDialogSync(id);
+    const torrentService = new TorrentService(mainWindow);
+    torrentService.onLoadData(url, savePath, programm);
+  }
+});
+
+async function showOpenDialog(id) {
+  const programm = getProgrammById(id);
   const data = dialog.showOpenDialog({ properties: ['openDirectory'] });
   const filePath = (await data).filePaths[0];
   const url = 'https://nces.by/wp-content/uploads/gossuok/AvPKISetup(bel).zip';
@@ -55,53 +69,28 @@ ipcMain.on('open-new-window', async () => {
     console.log('Directory selection was canceled');
     return;
   }
-  axios({
-    method: 'get',
-    url: url,
-    responseType: 'stream',
-  })
-    .then((response) => {
-      const totalBytes = parseInt(response.headers['content-length'], 10);
-      let receivedBytes = 0;
-      response.data.on('data', (chunk) => {
-        receivedBytes += chunk.length;
-        const progress = (receivedBytes / totalBytes) * 100;
-        mainWindow.webContents.send('progress', Math.round(progress));
-      });
+  return { programm: programm, savePath: writer, url: url };
+}
 
-      response.data.pipe(writer);
-
-      writer.on('finish', () => {
-        mainWindow.webContents.send('progress', 100, 'File loaded');
-      });
-
-      writer.on('error', (err) => {
-        console.error('Error writing file:', err);
-      });
-    })
-    .catch((error) => {
-      console.error('Error occurred:', error);
-    });
-});
-
-ipcMain.on('load-office', (e, id) => {
-  const programm = getProgrammById(id);
+function showOpenDialogSync(id) {
+  const programm = getProgrammById(+id);
   const pathFiles = dialog.showOpenDialogSync({
     properties: ['createDirectory', 'openDirectory'],
     buttonLabel: 'Save Files',
   });
   if (pathFiles && pathFiles.length > 0) {
-    mainWindow.webContents.send('load-office', pathFiles[0], programm);
-  } else {
-    return;
+    return { programm: programm, savePath: pathFiles[0], url: programm.url };
   }
-});
+  return;
+}
 
 function getProgrammById(id) {
   switch (id) {
     case 0:
-      return PROGRAMM.office;
+      return PROGRAMM.avest;
     case 1:
+      return PROGRAMM.office;
+    case 2:
       return PROGRAMM.acrobat;
     default:
       return null;

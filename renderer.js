@@ -151,47 +151,27 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  ipcRenderer.on('progress', (event, progress, message) => getProgressDownlaod(progress, message));
-  ipcRenderer.on('load-office', (event, savePath, programm) => downloadTorrent(savePath, programm));
+  ipcRenderer.on('on-download', (e, progress, isLoaded, programm) =>
+    getProgressDownlaod(progress, isLoaded, programm),
+  );
 });
 
-function getProgressDownlaod(progress, message) {
-  const doawnloadBtn = document.querySelector('.doawnload-btn');
-  const progressBox = document.querySelector('.progress');
-  const progressStatus = progressBox.querySelector('.progress__status');
-  const progressBar = progressBox.querySelector('.progress-bar');
-  doawnloadBtn.setAttribute('disabled', true);
-  if (message) {
-    doawnloadBtn.removeAttribute('disabled');
-    progressStatus.innerHTML = message;
-  } else {
-    progressStatus.innerHTML = `Loading: ${progress}%`;
-  }
-  progressBar.value = progress;
-}
-
-function downloadTorrent(savePath, program) {
-  const magnetUrl = program.url;
+function getProgressDownlaod(progress, isLoaded, programm) {
   const programList = document.querySelectorAll('.programs > li');
-  const programmNode = programList[program.id];
+  const programmNode = programList[programm.id];
+  const progressBox = programmNode.querySelector('.progress');
   const progressBar = programmNode.querySelector('.progress-bar');
-  const downloadBtn = programmNode.querySelector('.doawnload-torrent');
+  const downloadBtn = programmNode.querySelector('.doawnload-btn');
   const progressStatus = programmNode.querySelector('.progress__status');
-  const client = new WebTorrent();
-  client.add(magnetUrl, { path: savePath }, (torrent) => {
-    const totalBytes = parseInt(torrent.length, 10);
-    torrent.on('download', (bytes) => {
-      downloadBtn.setAttribute('disabled', true);
-      const progress = (torrent.downloaded / totalBytes) * 100;
-      progressBar.value = Math.round(progress);
-      progressStatus.textContent = `${Math.round(progress)}%`;
-    });
-    torrent.on('done', () => {
-      downloadBtn.removeAttribute('disabled');
-      progressStatus.textContent = `Download completed!`;
-    });
-    torrent.on('ready');
-  });
+  progressBox.classList.add('active');
+  downloadBtn.setAttribute('disabled', true);
+  progressBar.value = progress;
+  progressStatus.textContent = `${progress}%`;
+  if (isLoaded) {
+    progressStatus.textContent = `Download completed!`;
+    downloadBtn.removeAttribute('disabled');
+    progressBox.classList.remove('active');
+  }
 }
 
 function initProgrammsContent() {
@@ -205,31 +185,25 @@ function initProgrammsContent() {
                 </div>
             </li>
             <li class="programs-item">
-                <button class="doawnload-torrent">Скачать office</button>
+                <button class="doawnload-btn">Скачать office</button>
                 <div class="progress">
                     <span class="progress__status">Loading:</span>
                     <progress class="progress-bar" value="0" max="100"></progress>
                 </div>
             </li>
             <li class="programs-item">
-                <button class="doawnload-torrent">Скачать Acrobat Reader</button>
+                <button class="doawnload-btn">Скачать Acrobat Reader</button>
                 <div class="progress">
                     <span class="progress__status">Loading:</span>
                     <progress class="progress-bar" value="0" max="100"></progress>
                 </div>
             </li>
         </ul>`;
-  const progressBox = document.querySelector('.progress');
-  const progressStatus = progressBox.querySelector('.progress__status');
-  const progressBar = progressBox.querySelector('.progress-bar');
-  const doawnloadBtn = document.querySelector('.doawnload-btn');
-  const doawnloadsButtons = document.querySelectorAll('.doawnload-torrent');
+  const doawnloadsButtons = document.querySelectorAll('.doawnload-btn');
   doawnloadsButtons.forEach((downloadBtn, key) => {
     downloadBtn.addEventListener('click', (e) => {
-      ipcRenderer.send('load-office', key);
+      console.log({ key });
+      ipcRenderer.send('on-download', key);
     });
-  });
-  doawnloadBtn.addEventListener('click', (e) => {
-    ipcRenderer.send('open-new-window');
   });
 }
