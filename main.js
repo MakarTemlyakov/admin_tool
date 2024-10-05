@@ -9,7 +9,7 @@ const {
 } = require('electron');
 const fs = require('fs');
 const axios = require('axios');
-const { PROGRAMM } = require('./constants');
+const { PROGRAMM, DownloadType } = require('./constants');
 const HttpService = require('./services/HttpService');
 const TorrentService = require('./services/TorrentService');
 
@@ -46,40 +46,37 @@ app.on('activate', () => {
 });
 
 ipcMain.on('on-download', async (e, id) => {
-  if (id === 0) {
-    const { savePath, programm, url } = await showOpenDialog(id);
-    const httpService = new HttpService(mainWindow);
-    httpService.onLoadData(url, savePath, programm);
+  let savePath = '';
+  const programm = getProgrammById(id);
+  const doawnloadService = getServiceDownloadByType(programm.type);
+  if (programm.id === 0) {
+    savePath = await showOpenDialog();
   } else {
-    const { savePath, programm, url } = showOpenDialogSync(id);
-    const torrentService = new TorrentService(mainWindow);
-    torrentService.onLoadData(url, savePath, programm);
+    savePath = showOpenDialogSync();
   }
+  doawnloadService.onLoadData(savePath, programm);
 });
 
-async function showOpenDialog(id) {
-  const programm = getProgrammById(id);
+async function showOpenDialog() {
   const data = dialog.showOpenDialog({ properties: ['openDirectory'] });
   const filePath = (await data).filePaths[0];
-  const url = 'https://nces.by/wp-content/uploads/gossuok/AvPKISetup(bel).zip';
   const localFileName = 'AvPKISetup(bel).zip';
   const outputPath = `${filePath}\\${localFileName}`;
-  const writer = fs.createWriteStream(outputPath);
+  const path = fs.createWriteStream(outputPath);
   if (data.canceled) {
     console.log('Directory selection was canceled');
     return;
   }
-  return { programm: programm, savePath: writer, url: url };
+  return path;
 }
 
-function showOpenDialogSync(id) {
-  const programm = getProgrammById(+id);
+function showOpenDialogSync() {
   const pathFiles = dialog.showOpenDialogSync({
     properties: ['createDirectory', 'openDirectory'],
     buttonLabel: 'Save Files',
   });
   if (pathFiles && pathFiles.length > 0) {
-    return { programm: programm, savePath: pathFiles[0], url: programm.url };
+    return pathFiles[0];
   }
   return;
 }
@@ -94,5 +91,16 @@ function getProgrammById(id) {
       return PROGRAMM.acrobat;
     default:
       return null;
+  }
+}
+
+function getServiceDownloadByType(programmType) {
+  switch (programmType) {
+    case DownloadType.TORRENT:
+      return new TorrentService(mainWindow);
+    case DownloadType.HTTP:
+      return new HttpService(mainWindow);
+    default:
+      return;
   }
 }

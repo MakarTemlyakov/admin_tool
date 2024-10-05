@@ -178,7 +178,6 @@ ul {
   width: 40%;
 }
 
-.doawnload-torrent,
 .doawnload-btn {
   min-width: 100%;
   border: none;
@@ -189,14 +188,20 @@ ul {
   color: #ffffff;
 }
 
-.doawnload-torrent:disabled,
-.btn:disabled {
+.doawnload-btn:disabled,
+.doawnload-btn:disabled {
   cursor: not-allowed;
   background-color: #a9a9a9cc;
 }
 
 .group-checkbox {
   position: absolute;
+  display: flex;
+  gap: 10px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 15px;
   top: 0;
   left: 0;
   right: 0;

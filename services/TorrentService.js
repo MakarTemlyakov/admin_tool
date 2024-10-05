@@ -8,9 +8,9 @@ class TorrentService extends BaseService {
     this.mainWindow = mainWindow;
   }
 
-  onLoadData(url, savePath, programm) {
+  onLoadData(savePath, programm) {
     let progress = 0;
-    this.client.add(url, { path: savePath }, (torrent) => {
+    this.client.add(programm.url, { path: savePath }, (torrent) => {
       const totalBytes = parseInt(torrent.length, 10);
       torrent.on('download', (bytes) => {
         progress = (torrent.downloaded / totalBytes) * 100;

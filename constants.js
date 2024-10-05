@@ -63,6 +63,7 @@ const DOMAINS = [
     id: 0,
     name: 'Налоговый портал',
     url: 'https://www.portal.nalog.gov.by/eds1',
+    imgUrl: './icons/logoMNS.png',
     isChecked: false,
     domains: [
       { id: 0, name: 'gov.by', values: ['*.nalog'] },
@@ -142,10 +143,30 @@ const ACTIVE_X_OPTIONS = {
   '270C': 'ActiveX Controls and plug-ins: Run Antimalware software on ActiveX controls',
 };
 
+const DownloadType = {
+  TORRENT: 'torrent',
+  HTTP: 'http',
+};
+
 const PROGRAMM = {
-  avest: { id: 0, name: 'Скачать Авест', url: AVEST_URL },
-  office: { id: 1, name: 'Скачать Офис(2016-2019)', url: TORRENT_URL_OFFICE },
-  acrobat: { id: 2, name: 'Скачать Acrobat Reader (2021)', url: TORRENT_URL_ACROBAT },
+  avest: {
+    id: 0,
+    name: 'Скачать Авест',
+    url: AVEST_URL,
+    type: DownloadType.HTTP,
+  },
+  office: {
+    id: 1,
+    name: 'Скачать Офис(2016-2019)',
+    url: TORRENT_URL_OFFICE,
+    type: DownloadType.TORRENT,
+  },
+  acrobat: {
+    id: 2,
+    name: 'Скачать Acrobat Reader (2021)',
+    url: TORRENT_URL_ACROBAT,
+    type: DownloadType.TORRENT,
+  },
 };
 
 module.exports = {
@@ -162,4 +183,5 @@ module.exports = {
   AVEST_URL,
   PROGRAMM,
   REGISTRY,
+  DownloadType,
 };

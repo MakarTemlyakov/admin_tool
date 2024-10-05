@@ -202,7 +202,6 @@ function initProgrammsContent() {
   const doawnloadsButtons = document.querySelectorAll('.doawnload-btn');
   doawnloadsButtons.forEach((downloadBtn, key) => {
     downloadBtn.addEventListener('click', (e) => {
-      console.log({ key });
       ipcRenderer.send('on-download', key);
     });
   });

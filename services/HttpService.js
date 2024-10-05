@@ -6,11 +6,11 @@ class HttpService extends BaseService {
     super();
     this.mainWindow = mainWindow;
   }
-  onLoadData(url, savePath, programm) {
+  onLoadData(savePath, programm) {
     let progress = 0;
     axios({
       method: 'get',
-      url: url,
+      url: programm.url,
       responseType: 'stream',
     })
       .then((response) => {
