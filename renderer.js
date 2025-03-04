@@ -12,6 +12,8 @@ const {
   PROGRAMM,
   AVEST_URL,
   REGISTRY,
+  PROGRAMMS,
+  NAV_ITEMS,
 } = require('./constants');
 const { ipcRenderer } = require('electron');
 const regedit = require('regedit').promisified;
@@ -28,11 +30,15 @@ const PortalRepository = require('./repositories/PortalRepository');
 const PortalService = require('./services/PortalService');
 const RegistryRepository = require('./repositories/RegistryRepository');
 const RegisrtyService = require('./services/RegisrtyService');
+const { progressBarTemplate } = require('./ui/templates/progressBarTemplate');
+const { navigationTemplate } = require('./ui/templates/navigationTemplate');
+const { createSvgHelper } = require('./helpers/createSvgHelper');
 const portalRepository = new PortalRepository(DOMAINS);
 const registryRepository = new RegistryRepository(REGISTRY);
 const regisrtyService = new RegisrtyService(registryRepository);
 const portalService = new PortalService(portalRepository, registryRepository);
 const main = document.querySelector('.main');
+const app = document.querySelector('#app');
 const checkedNavRadio = document.querySelector('.menu-item__radio:checked');
 const navRadios = document.querySelectorAll('.menu-item__radio');
 let prevNavRadio = checkedNavRadio.value;
@@ -56,6 +62,7 @@ const portals = DOMAINS.map((domain) => {
     className: 'portal-checkbox',
     label: domain.name,
     checked: domain.isChecked,
+    srcImg: domain.imgUrl,
   });
 
   const wrapLabel = checkBox.querySelector('.label-wrap');
@@ -121,7 +128,7 @@ function initPortalsContent() {
   });
 
   button.addEventListener('click', () => {
-    form.dispatchEvent(new Event('submit')); // Вызываем событие submit на форме
+    form.dispatchEvent(new Event('submit'));
   });
 }
 
@@ -135,7 +142,7 @@ function initContentByNav(checkedValue) {
       initPortalsContent();
       break;
     case 'programms':
-      initProgrammsContent();
+      initProgramList();
       break;
     default:
       return null;
@@ -144,6 +151,8 @@ function initContentByNav(checkedValue) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  const navigation = navigationTemplate({ items: NAV_ITEMS });
+  app.prepend(navigation);
   initPortalsContent();
   navRadios.forEach((navRadio) => {
     navRadio.addEventListener('change', (e) => {
@@ -174,31 +183,29 @@ function getProgressDownlaod(progress, isLoaded, programm) {
   }
 }
 
-function initProgrammsContent() {
-  main.innerHTML = `
-        <ul class="programs">
-            <li class="programs-item">
-                <button class="doawnload-btn">Скачать авест</button>
-                <div class="progress">
-                    <span class="progress__status">Loading:</span>
-                    <progress class="progress-bar" value="0" max="100"></progress>
-                </div>
-            </li>
-            <li class="programs-item">
-                <button class="doawnload-btn">Скачать office</button>
-                <div class="progress">
-                    <span class="progress__status">Loading:</span>
-                    <progress class="progress-bar" value="0" max="100"></progress>
-                </div>
-            </li>
-            <li class="programs-item">
-                <button class="doawnload-btn">Скачать Acrobat Reader</button>
-                <div class="progress">
-                    <span class="progress__status">Loading:</span>
-                    <progress class="progress-bar" value="0" max="100"></progress>
-                </div>
-            </li>
-        </ul>`;
+function initProgramList() {
+  const programsNodes = PROGRAMMS.map((programm) => {
+    const button = buttonTemplate({
+      className: 'doawnload-btn',
+      type: 'button',
+      textContent: programm.name,
+      disabled: false,
+    });
+    const progressBar = progressBarTemplate();
+    const parentNode = document.createElement('div');
+    parentNode.append(button, progressBar);
+    return parentNode;
+  });
+
+  const listOfNodes = listItemsTemplate({
+    listClassName: 'programs',
+    itemClassName: 'programs-item',
+    insertItems: programsNodes,
+    removeParentNode: true,
+  });
+
+  main.appendChild(listOfNodes);
+
   const doawnloadsButtons = document.querySelectorAll('.doawnload-btn');
   doawnloadsButtons.forEach((downloadBtn, key) => {
     downloadBtn.addEventListener('click', (e) => {

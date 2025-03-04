@@ -1,3 +1,5 @@
+const { ICONS } = require('./icons');
+
 const REG_DOMAINS =
   'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings\\ZoneMap\\Domains';
 const REG_SECURE_PROTOCOLS =
@@ -14,6 +16,8 @@ const TORRENT_URL_OFFICE =
   'magnet:?xt=urn:btih:2678550B722624B4D0F614197758525936507C2A&tr=http%3A%2F%2Fbt2.t-ru.org%2Fann%3Fmagnet&dn=Microsoft%20Office%202016-2019%20Professional%20Plus%20%2F%20Standard%20%2B%20Visio%20%2B%20Project%2016.0.12527.22105%20(2022.03)%20(W%207-W%2011)%20RePack%20by%20KpoJIuK%20%5BMulti%2FRu%5D';
 const TORRENT_URL_ACROBAT =
   'magnet:?xt=urn:btih:50FD84BC108C0F82265B13F7C95C303C8F4D70B6&tr=http%3A%2F%2Fbt3.t-ru.org%2Fann%3Fmagnet&dn=Adobe%20Acrobat%20Pro%20DC%202021.001.20149%20RePack%20by%20KpoJIuK%20%5B2021%2CMulti%2FRu%5D';
+const VVODDPU_URL = 'https://keysoft.by/upload/files/dpu/vvoddpu_3_3_0.zip';
+const EDECL = 'https://service.nalog.gov.by/soft/EDeclaration_v4.5.48_Setup_(Include_JRE).exe';
 
 const REGISTRY = {
   REG_SECURE_PROTOCOLS: {
@@ -79,6 +83,7 @@ const DOMAINS = [
     name: 'Cчета фактуры',
     url: 'http://vat.gov.by/mainPage/',
     isChecked: false,
+    imgUrl: './icons/logoMNS.png',
     domains: [{ id: 0, name: 'vat.gov.by', values: [] }],
   },
   {
@@ -86,6 +91,7 @@ const DOMAINS = [
     name: 'ФСЗН',
     url: 'http://portal2.ssf.gov.by/mainPage/',
     isChecked: false,
+    imgUrl: './icons/fszn.jpg',
     domains: [
       { id: 0, name: 'nces.by', values: ['*.usd'] },
       { id: 1, name: 'ssf.gov.by', values: ['*.portal2'] },
@@ -96,13 +102,15 @@ const DOMAINS = [
     name: 'Электронный респондент',
     isChecked: false,
     url: 'http://e-respondent.belstat.gov.by/belstat/',
+    imgUrl: './icons/stat.png',
     domains: [{ id: 0, name: 'e-respondent.belstat.gov.by', values: [] }],
   },
   {
     id: 4,
-    name: 'НАЦ Банк (Портал валютных договоров)',
+    name: 'Национальнрый банк РБ',
     isChecked: false,
     url: 'http://rvd.nbrb.by/nbrbResidentUi/#/',
+    imgUrl: './icons/bank.png',
     domains: [
       { id: 0, name: 'raschet.by', values: ['*.legal', '*.ilegal', '*.oauth', '*.ioauth'] },
       { id: 1, name: 'nbrb.by', values: ['*.rvd'] },
@@ -113,6 +121,7 @@ const DOMAINS = [
     name: 'Центр по налогам и сборам (СККО)',
     isChecked: false,
     url: 'https://lk.skko.by/',
+    imgUrl: './icons/skko.png',
     domains: [
       { id: 0, name: 'skko.by', values: ['*.lk'] },
       { id: 1, name: 'support.skno.by', values: [] },
@@ -167,7 +176,57 @@ const PROGRAMM = {
     url: TORRENT_URL_ACROBAT,
     type: DownloadType.TORRENT,
   },
+  vvoddpu: {
+    id: 3,
+    name: 'Скачать Ввод дпу',
+    url: VVODDPU_URL,
+    type: DownloadType.HTTP,
+  },
+  edecl: {
+    id: 4,
+    name: 'Скачать Электронное декларирование',
+    url: EDECL,
+    type: DownloadType.HTTP,
+  },
 };
+
+const PROGRAMMS = [
+  {
+    id: 0,
+    name: 'Скачать Авест',
+    url: AVEST_URL,
+    type: DownloadType.HTTP,
+  },
+  {
+    id: 1,
+    name: 'Скачать Офис(2016-2019)',
+    url: TORRENT_URL_OFFICE,
+    type: DownloadType.TORRENT,
+  },
+  {
+    id: 2,
+    name: 'Скачать Acrobat Reader (2021)',
+    url: TORRENT_URL_ACROBAT,
+    type: DownloadType.TORRENT,
+  },
+  {
+    id: 3,
+    name: 'Скачать Ввод дпу',
+    url: VVODDPU_URL,
+    type: DownloadType.HTTP,
+  },
+  {
+    id: 4,
+    name: 'Скачать Электронное декларирование',
+    url: EDECL,
+    type: DownloadType.HTTP,
+  },
+];
+
+const NAV_ITEMS = [
+  { id: 'portals', svg: ICONS.portalsIcon, isChecked: true, label: 'Порталы' },
+  { id: 'programms', svg: ICONS.portalsIcon, isChecked: true, label: 'Программы' },
+];
 
 module.exports = {
   REG_DOMAINS,
@@ -184,4 +243,6 @@ module.exports = {
   PROGRAMM,
   REGISTRY,
   DownloadType,
+  PROGRAMMS,
+  NAV_ITEMS,
 };

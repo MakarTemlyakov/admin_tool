@@ -49,11 +49,12 @@ ipcMain.on('on-download', async (e, id) => {
   let savePath = '';
   const programm = getProgrammById(id);
   const doawnloadService = getServiceDownloadByType(programm.type);
-  if (programm.id === 0) {
+  if (programm.type === DownloadType.HTTP) {
     savePath = await showOpenDialog();
   } else {
     savePath = showOpenDialogSync();
   }
+  savePath = showOpenDialogSync();
   doawnloadService.onLoadData(savePath, programm);
 });
 
@@ -89,6 +90,10 @@ function getProgrammById(id) {
       return PROGRAMM.office;
     case 2:
       return PROGRAMM.acrobat;
+    case 3:
+      return PROGRAMM.vvoddpu;
+    case 4:
+      return PROGRAMM.edecl;
     default:
       return null;
   }
